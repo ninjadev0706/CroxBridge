@@ -1,0 +1,9 @@
+.tooltip {
+    max-width: 300px;
+    z-index: 10000;
+}
+
+.currencyList {
+    height: 500px;
+    overflow: auto;
+}

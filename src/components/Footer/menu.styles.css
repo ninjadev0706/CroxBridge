@@ -1,0 +1,234 @@
+.button {
+  background-color: transparent;
+  color: white;
+  box-sizing: border-box;
+  border-top: 5px solid transparent;
+  box-sizing: border-box;
+  padding-left: 30px;
+  padding-right: 30px;
+  font-size: 16px;
+  font-weight: 100;
+}
+
+.button:hover {
+  background-color: transparent;
+  border-top: 5px solid #FE7D74;
+}
+.wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #121827;
+  padding: 20px 10px;
+  padding-bottom: 0px;
+  box-sizing: border-box;
+  /* align-items: center; */
+}
+
+.dropdown {
+  background-color: transparent;
+  color: white;
+  box-sizing: border-box;
+  border-top: 5px solid transparent;
+  box-sizing: border-box;
+  padding: 0px 30px;
+  font-size: 16px;
+  font-weight: 100;
+
+}
+
+.dropdown:hover {
+  background-color: transparent;
+  border-top: 5px solid #FE7D74;
+}
+
+.itemContainer {
+  background-color: #121827;
+  border: none;
+}
+
+.menu-item {
+  background-color: #121827;
+  border: none;
+  padding: 30px 20px
+}
+.menu-item:hover {
+  background-color: #FE7D74;
+}
+.partners {
+  padding: 70px 11vw;
+  background-color: #2A578A;
+}
+.partner_review_group {
+  margin-top: 15px;
+  padding: 30px;
+}
+.partner_review {
+  margin: 10px;
+  min-height: 205px;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: rgba(0,0,0,0.1);
+}
+.partner_review_white {
+  margin: 10px;
+  min-height: 205px;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: rgba(255,255,255,0.1);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1), 0 3px 6px rgba(0,0,0,0.2);
+}
+.footer {
+  background-color: #121827;
+  padding: 50px 80px;
+  display: flex;
+}
+.several_links {
+  padding: 0 50px;
+  display: flex;
+  justify-content: space-between;
+}
+.several_links a {
+  color: white;
+  font-weight: 200;
+  font-size: 14px;
+}
+.several_links div {
+  line-height: 2.5;
+}
+.crox_info {
+  margin-left: 20px;
+}
+.crox_detail {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 15px;
+  padding: 12px;
+  height: 230px;
+}
+.crox_info .detail_info {
+  width: 50%;
+  color: #2A578A;
+  font-weight: bold;
+  margin-right: 10px;
+}
+.crox_info div{
+  line-height: 2.5;
+  font-size: 14px;
+}
+.closeButton {
+  color: 'white';
+  position: fixed;
+  left: 230px;
+  top: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.partner_img img{
+  background-color: rgba(0,0,0,0.1);
+  padding: 15px 40px;
+  border-radius: 10px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1), 0 3px 6px rgba(0,0,0,0.2);
+}
+.square_img img{
+  width: 45px;
+}
+.swiper_head {
+  width: 85%;
+}
+.soon_text {
+  font-size: 10px;
+  background-color: chartreuse;
+  color: black;
+  border-radius: 10px;
+  padding: 0px 7px;
+}
+.accordion_top {
+  background-color: #0e131f !important;
+}
+.accordion_detail a {
+  font-size: 14px;
+}
+.text {
+  display: flex;
+  align-items: center;
+  font-size: 30px !important;
+  border: 1px solid white;
+  border-radius: 10px;
+  padding: 10px 5px;
+  text-align: center;
+  font-weight: 700;
+  text-decoration: none !important;
+  color: #f5f5f5 !important;
+  text-shadow: 1px 1px 1px #919191,
+      1px 2px 1px #919191,
+      1px 3px 1px #919191,
+      1px 4px 1px #919191,
+      1px 5px 1px #919191,
+  1px 18px 6px rgba(255, 255, 255, 0.2),
+  1px 22px 10px rgba(255, 255, 255, 0.1),
+  1px 25px 35px rgba(255, 255, 255, 0.1),
+  1px 30px 60px rgba(255, 255, 255, 0.2);
+}
+@media screen and (max-width: 1400px) {
+  .partners {
+    padding: 50px 5vw;
+  }
+  .several_links {
+    padding: 0 10px;
+  }
+  .footer {
+    padding: 30px 4vw;
+  }
+  .crox_info .sc-eCssSg{
+    margin-left: 20px;
+  }
+  .crox_info div {
+    line-height: 2;
+    justify-content: left !important;
+  }
+}
+@media screen and (max-width: 1024px) {
+  .crox_detail {
+    height: 220px;
+    padding: 1px 25px;
+  }
+  .social_icon {
+    display: none;
+  }
+}
+@media screen and (max-width: 600px) {
+  .several_links {
+    display: none;
+  }
+  .footer_headtext {
+    font-size: 35px !important;
+  }
+  .crox_info .sc-eCssSg{
+    margin-left: 0px;
+  }
+  .crox_info div {
+    font-size: 14px;
+    justify-content: left !important;
+  }
+  .detail_info {
+    font-size: 14px;
+  }
+  .crox_detail {
+    padding: 0px 32px 5px 16px;
+    height: 200px;
+  }
+  .partner_review_group {
+    padding: 0
+  }
+}
+
+.buycrox_btn a {
+  color: white;
+  text-decoration: none;
+}
+
+.buycrox_btn a:hover {
+  text-decoration: none;
+}

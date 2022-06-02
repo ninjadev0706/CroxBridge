@@ -1,0 +1,15 @@
+.explorer-header {
+    text-align: center; 
+    font-size: 34px;
+}
+
+.table-header {
+    background-color: #2d74c4;
+    border-color: #2c2d3a;
+    color: white;
+}
+
+.table-cell {
+    color: white;
+    border-color: #1A1B23;
+}

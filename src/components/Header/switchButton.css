@@ -1,0 +1,80 @@
+:root {
+  --darkbg:#251D29;
+  --darkt: #FFD1F7;
+  --lightbg: #fff;
+  --lightt: #D43370;
+  
+  --toggleHeight: 38.4px;
+  --toggleWidth: 72px;
+  --toggleBtnRadius: 24px;
+
+  --bgColor--night: #423966;
+  --toggleBtn-bgColor--night: var(--bgColor--night);
+  --mooncolor: #D9FBFF;
+  --bgColor--day: #9ee3fb;
+  --toggleBtn-bgColor--day: var(--bgColor--day);
+}
+
+body{
+  transition: all .2s ease-in-out;
+  background: var(--darkbg);
+  color: var(--darkt);
+}
+.light{
+  background: var(--lightbg);
+  color: var(--lightt);
+}
+.tdnn {
+  margin: 0 auto;
+  /*change size of toggle with font-size*/
+  font-size: 30%;
+  margin-top: 6.4px;
+  position: relative;
+  height: var(--toggleHeight);
+  width: var(--toggleWidth);
+  border-radius: var(--toggleHeight);
+  transition: all 500ms ease-in-out;
+  background: var(--bgColor--night);
+}
+.day{
+  background: #FFBF71;
+}
+.moon {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  transition: all 400ms ease-in-out;
+  top: 7.2px;
+  left: 7.2px;
+  transform: rotate(-75deg);
+  width: var(--toggleBtnRadius);
+  height: var(--toggleBtnRadius);
+  background: var(--bgColor--night);
+  box-shadow: 
+    7.2px 6px 0 0px var(--mooncolor) inset,
+    rgba(255, 255, 255, 0.1) 0px -16.8px 0 -10.8px,
+    rgba(255, 255, 255, 0.1) 7.2px 16.8px 0 -10.8px,
+    rgba(255, 255, 255, 0.1) 19.2px 31.2px 0 -9.6px,
+    rgba(255, 255, 255, 0.1) 14.4px 19.2px 0 -9.6px,
+    rgba(255, 255, 255, 0.1) 19.2px 19.2px 0 -10.8px,
+    rgba(255, 255, 255, 0.1) 14.4px 31.2px 0 -10.8px,
+    rgba(255, 255, 255, 0.1) -9.6px 16.8px 0 -10.8px,
+    rgba(255, 255, 255, 0.1) -2.4px 19.2px 0 -10.8px;
+}
+.sun {
+  top: 10.8px;
+  left: 43.2px;
+  transform: rotate(0deg);
+  width: 16.8px;
+  height: 16.8px;
+  background: #fff;
+  box-shadow: 7.2px 7.2px 0 9.6px #fff inset,
+    0 -10px 0 -6.4px #fff,
+    8.4px -8.4px 0 -7.2px #fff,
+    10px 0 0 -6.4px #fff,
+    8.4px 8.4px 0 -7.2px #fff,
+    0 10px 0 -6.4px #fff,
+    -8.4px 8.4px 0 -7.2px #fff,
+    -10px 0 0 -6.4px #fff,
+    -8.4px -8.4px 0 -7.2px #fff;
+}

@@ -1,0 +1,107 @@
+{
+  "name": "crox-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "crox-bridge/*"
+  ],
+  "scripts": {
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
+    "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn format",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "dependencies": {
+    "@binance-chain/bsc-connector": "^1.0.0",
+    "@brainhubeu/react-carousel": "^2.0.4",
+    "@chakra-ui/react": "^1.7.1",
+    "@connext/nxtp-sdk": "^0.1.22",
+    "@crowdin/crowdin-api-client": "^1.10.1",
+    "@emotion/react": "^11.9.0",
+    "@emotion/styled": "^11.6.0",
+    "@ethersproject/abi": "^5.0.7",
+    "@glidejs/glide": "^3.4.1",
+    "@kenshooui/react-menu": "^4.0.5",
+    "@lottiefiles/lottie-player": "^1.5.6",
+    "@mui/icons-material": "^5.2.1",
+    "@mui/material": "^5.2.3",
+    "@pancakeswap-libs/sdk-v2": "^2.2.0",
+    "@reduxjs/toolkit": "^1.5.0",
+    "@splinetool/react-spline": "^2.0.0",
+    "@splinetool/runtime": "^0.9.19",
+    "@szhsin/react-menu": "^1.10.1",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "@types/react-router-dom": "^5.1.5",
+    "@types/styled-components": "^5.1.7",
+    "@usedapp/core": "^0.5.4",
+    "@web3-react/core": "^6.1.9",
+    "@web3-react/walletconnect-connector": "^6.2.4",
+    "bignumber.js": "^9.0.0",
+    "chart.js": "^2.9.4",
+    "crox-uikit": "^1.1.5",
+    "framer-motion": "5",
+    "iframe-resizer-react": "^1.1.0",
+    "jquery": "^3.6.0",
+    "lodash": "^4.17.20",
+    "node-sass": "^4.14.1",
+    "react": "^17.0.1",
+    "react-animated-modal": "^1.1.1",
+    "react-bootstrap": "^2.0.2",
+    "react-burger-menu": "^3.0.6",
+    "react-chartjs-2": "^2.11.1",
+    "react-countup": "^4.3.3",
+    "react-dom": "^17.0.1",
+    "react-feather": "^2.0.8",
+    "react-icons": "^4.2.0",
+    "react-modal": "^3.14.4",
+    "react-multi-carousel": "^2.6.3",
+    "react-redux": "^7.2.2",
+    "react-responsive-carousel": "^3.2.19",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "^4.0.1",
+    "react-simple-animate": "^3.3.12",
+    "react-spinners": "^0.11.0",
+    "react-tooltip": "^4.2.21",
+    "react-twitter-widgets": "^1.9.5",
+    "react-window": "^1.8.6",
+    "styled-components": "^5.1.1",
+    "swiper": "^6.7.5",
+    "typescript": "^4.1.3",
+    "universal-cookie": "^4.0.4",
+    "use-wave": "^1.0.0-beta.6",
+    "web3": "^1.3.1"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
+    "@pancakeswap-libs/eslint-config-pancake": "1.0.0",
+    "@types/jest": "^26.0.19",
+    "crox-new-uikit": "^1.0.9",
+    "eslint": "^7.16.0",
+    "husky": "^4.3.0",
+    "prettier": "^2.1.2",
+    "source-map-explorer": "^2.5.1"
+  }
+}

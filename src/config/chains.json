@@ -1,0 +1,200 @@
+[
+    {
+        "id": "ethereum",
+        "title": "Ethereum",
+        "short_name": "ETH",
+        "chain_id": 1,
+        "provider_params": [
+            {
+                "chainId": "0x1",
+                "chainName": "Ethereum Mainnet",
+                "rpcUrls": [
+                    "https://api.mycryptoapi.com/eth",
+                    "https://cloudflare-eth.com"
+                ],
+                "nativeCurrency": {
+                    "name": "Ether",
+                    "symbol": "ETH",
+                    "decimals": 18
+                },
+                "blockExplorerUrls": [
+                    "https://etherscan.io"
+                ]
+            }
+        ],
+        "explorer": {
+            "name": "Etherscan",
+            "url": "https://etherscan.io",
+            "icon": "/logos/explorers/etherscan.png",
+            "block_path": "/block/{block}",
+            "address_path": "/address/{address}",
+            "contract_path": "/token/{address}",
+            "contract_0_path": "/address/{address}",
+            "transaction_path": "/tx/{tx}"
+        },
+        "image": "/logos/chains/mainnet/ethereum.png",
+        "nomad": {
+            "id": "ethereum"
+        }
+    },
+    {
+        "id": "binance",
+        "title": "Binance Smart Chain",
+        "short_name": "BSC",
+        "chain_id": 56,
+        "provider_params": [
+            {
+                "chainId": "0x38",
+                "chainName": "Binance Smart Chain Mainnet",
+                "rpcUrls": [
+                    "https://bsc-dataseed1.ninicoin.io",
+                    "https://bsc-dataseed2.ninicoin.io",
+                    "https://bsc-dataseed3.ninicoin.io",
+                    "https://bsc-dataseed4.ninicoin.io",
+                    "https://bsc-dataseed1.binance.org",
+                    "https://bsc-dataseed2.binance.org",
+                    "https://bsc-dataseed3.binance.org",
+                    "https://bsc-dataseed4.binance.org",
+                    "https://bsc-dataseed1.defibit.io",
+                    "https://bsc-dataseed2.defibit.io",
+                    "https://bsc-dataseed3.defibit.io",
+                    "https://bsc-dataseed4.defibit.io"
+                ],
+                "nativeCurrency": {
+                    "name": "Binance Chain Native Token",
+                    "symbol": "BNB",
+                    "decimals": 18
+                },
+                "blockExplorerUrls": [
+                    "https://bscscan.com"
+                ]
+            }
+        ],
+        "explorer": {
+            "name": "BscScan",
+            "url": "https://bscscan.com",
+            "icon": "/logos/explorers/bscscan.png",
+            "block_path": "/block/{block}",
+            "address_path": "/address/{address}",
+            "contract_path": "/token/{address}",
+            "contract_0_path": "/address/{address}",
+            "transaction_path": "/tx/{tx}"
+        },
+        "image": "/logos/chains/mainnet/binance.png"
+    },
+    {
+        "id": "polygon",
+        "title": "Polygon",
+        "short_name": "MATIC",
+        "chain_id": 137,
+        "provider_params": [
+            {
+                "chainId": "0x89",
+                "chainName": "Matic Mainnet",
+                "rpcUrls": [
+                    "https://polygon-rpc.com"
+                ],
+                "nativeCurrency": {
+                    "name": "Matic",
+                    "symbol": "MATIC",
+                    "decimals": 18
+                },
+                "blockExplorerUrls": [
+                    "https://polygonscan.com"
+                ]
+            }
+        ],
+        "explorer": {
+            "name": "Polygonscan",
+            "url": "https://polygonscan.com",
+            "icon": "/logos/explorers/polygonscan.png",
+            "block_path": "/block/{block}",
+            "address_path": "/address/{address}",
+            "contract_path": "/token/{address}",
+            "contract_0_path": "/address/{address}",
+            "transaction_path": "/tx/{tx}"
+        },
+        "image": "/logos/chains/mainnet/polygon.png"
+    },
+    {
+        "id": "fantom",
+        "title": "Fantom",
+        "short_name": "FTM",
+        "chain_id": 250,
+        "provider_params": [
+            {
+                "chainId": "0xfa",
+                "chainName": "Fantom Opera",
+                "rpcUrls": [
+                    "https://rpc.ftm.tools",
+                    "https://rpcapi.fantom.network"
+                ],
+                "nativeCurrency": {
+                    "name": "Fantom",
+                    "symbol": "FTM",
+                    "decimals": 18
+                },
+                "blockExplorerUrls": [
+                    "https://ftmscan.com"
+                ]
+            }
+        ],
+        "explorer": {
+            "name": "FTMScan",
+            "url": "https://ftmscan.com",
+            "icon": "/logos/explorers/ftmscan.png",
+            "block_path": "/block/{block}",
+            "address_path": "/address/{address}",
+            "contract_path": "/token/{address}",
+            "contract_0_path": "/address/{address}",
+            "transaction_path": "/tx/{tx}"
+        },
+        "image": "/logos/chains/mainnet/fantom.png"
+    },
+    {
+        "id": "rinkeby",
+        "title": "Rinkeby Network",
+        "short_name": "Rinkeby",
+        "chain_id": 4,
+        "provider_params": [
+            {
+                "chainId": "0x4",
+                "chainName": "Rinkeby Test Network",
+                "rpcUrls": [
+                    "https://rinkeby.infura.io/v3/"
+                ],
+                "nativeCurrency": {
+                    "name": "ETH",
+                    "symbol": "ETH",
+                    "decimals": 18
+                },
+                "blockExplorerUrls": [
+                    "https://rinkeby.etherscan.io"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "goerli",
+        "title": "Goerli Network",
+        "short_name": "Goerli",
+        "chain_id": 5,
+        "provider_params": [
+            {
+                "chainId": "0x5",
+                "chainName": "Goerli Test Network",
+                "rpcUrls": [
+                    "https://goerli.infura.io/v3/"
+                ],
+                "nativeCurrency": {
+                    "name": "ETH",
+                    "symbol": "ETH",
+                    "decimals": 18
+                },
+                "blockExplorerUrls": [
+                    "https://goerli.etherscan.io"
+                ]
+            }
+        ]
+    }
+]

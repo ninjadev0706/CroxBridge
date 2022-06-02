@@ -1,0 +1,314 @@
+.HotPink-Glitter {
+    color: white;
+    letter-spacing: 1px;
+    border-radius: 5px;
+    padding: 3px;
+    font-weight: bold;
+    font-size: 14px;
+    background: -webkit-linear-gradient(transparent, transparent),
+        url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/191814/sparkleshotpink.gif) repeat;
+}
+
+.window {
+    width: 25.5px;
+    height: 25.5px;
+    background: #a0d5d3;
+    position: absolute;
+    top: 32px;
+    border-radius: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    border: 1.5px solid #f8e7dc;
+    overflow: hidden;
+}
+
+.santa {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    -o-transform: translateX(-50%);
+    transform: translateX(-50%);
+}
+
+.santa .body {
+    width: 14.25px;
+    height: 15.75px;
+    background: #de2f32;
+    position: relative;
+    border-radius: 50%;
+    top: 0;
+    -webkit-animation: bodyLaugh 4s linear infinite;
+    -moz-animation: bodyLaugh 4s linear infinite;
+    -ms-animation: bodyLaugh 4s linear infinite;
+    -o-animation: bodyLaugh 4s linear infinite;
+    animation: bodyLaugh 4s linear infinite;
+    -webkit-transform: translateY(50%);
+    -moz-transform: translateY(50%);
+    -ms-transform: translateY(50%);
+    -o-transform: translateY(50%);
+    transform: translateY(50%);
+}
+
+.santa .body:before {
+    content: " ";
+    width: 0.525px;
+    height: 0.525px;
+    background: #f7be10;
+    border-radius: 50%;
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    box-shadow: 0px -18px 0px #f7be10, 0px 18px 0px #f7be10;
+}
+
+.santa .santa_head {
+    z-index: 2;
+    position: absolute;
+    bottom: 6.75px;
+    left: 50%;
+    -webkit-animation: headLaugh 4s linear infinite;
+    -moz-animation: headLaugh 4s linear infinite;
+    -ms-animation: headLaugh 4s linear infinite;
+    -o-animation: headLaugh 4s linear infinite;
+    animation: headLaugh 4s linear infinite;
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    -o-transform: translateX(-50%);
+    transform: translateX(-50%);
+}
+
+.santa .santa_head .face {
+    width: 9px;
+    height: 9.75px;
+    background: #edcab0;
+    background: radial-gradient(#edcab0, #e9a982);
+    border-radius: 50%;
+    border: 0.225px solid #f8e7dc;
+}
+
+.santa .santa_head .face .redhat .whitepart {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    -o-transform: translateX(-50%);
+    transform: translateX(-50%);
+    width: 90%;
+    height: 2.4px;
+    background: #f8e7dc;
+    border-radius: 3.75px;
+    z-index: 4;
+    box-shadow: 0px 6px 0px -4px rgba(0, 0, 0, 0.1);
+}
+
+.santa .santa_head .face .redhat .redpart {
+    width: 9px;
+    height: 9px;
+    background: #de2f32;
+    position: absolute;
+    top: -3.75px;
+    left: 1.125px;
+    border-radius: 50%;
+    z-index: -1;
+}
+
+.santa .santa_head .face .redhat .redpart:before {
+    content: " ";
+    width: 7.125px;
+    height: 7.125px;
+    position: absolute;
+    left: 0;
+    top: 0.9px;
+    border-radius: 50%;
+    box-shadow: inset -8px -1px 0px -5px rgba(0, 0, 0, 0.05);
+}
+
+.santa .santa_head .face .redhat .redpart:after {
+    content: " ";
+    position: absolute;
+    right: 0;
+    top: 4.5px;
+    background: #de2f32;
+    width: 1.5px;
+    height: 5.625px;
+}
+
+.santa .santa_head .face .redhat .hatball {
+    width: 2.85px;
+    height: 2.85px;
+    background: #f8e7dc;
+    border-radius: 50%;
+    z-index: 5;
+    position: absolute;
+    right: -1.5px;
+    top: 3px;
+    box-shadow: 0px 6px 0px -4px rgba(0, 0, 0, 0.1);
+}
+
+.santa .santa_head .face .eyes {
+    position: absolute;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    -o-transform: translateX(-50%);
+    transform: translateX(-50%);
+    top: 2.85px;
+}
+
+.santa .santa_head .face .eyes:before,
+.santa .santa_head .face .eyes:after {
+    content: " ";
+    position: absolute;
+    width: 1.125px;
+    height: 0.675px;
+    top: 0;
+    border: 0.375px solid #a8744f;
+    border-width: 0;
+    border-top-width: 0.375px;
+    border-radius: 50%;
+}
+
+.santa .santa_head .face .eyes:before {
+    left: -2.1px;
+}
+
+.santa .santa_head .face .eyes:after {
+    right: -2.1px;
+}
+
+.santa .santa_head .face .beard {
+    width: 4.125px;
+    height: 4.125px;
+    background: #f8e7dc;
+    border-radius: 50%;
+    position: absolute;
+    bottom: -2.25px;
+    left: 50%;
+    -webkit-animation: beardLaugh 4s linear infinite;
+    -moz-animation: beardLaugh 4s linear infinite;
+    -ms-animation: beardLaugh 4s linear infinite;
+    -o-animation: beardLaugh 4s linear infinite;
+    animation: beardLaugh 4s linear infinite;
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    -o-transform: translateX(-50%);
+    transform: translateX(-50%);
+}
+
+.santa .santa_head .face .beard:before,
+.santa .santa_head .face .beard:after {
+    content: " ";
+    width: 6px;
+    height: 6px;
+    background: #f8e7dc;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 1.125px;
+}
+
+.santa .santa_head .face .beard:before {
+    left: -3px;
+}
+
+.santa .santa_head .face .beard:after {
+    right: -3px;
+}
+
+.santa .santa_head .face .beard .nouse {
+    width: 1.875px;
+    height: 1.5px;
+    border-radius: 50%;
+    background: #edcab0;
+    position: absolute;
+    z-index: 3;
+    box-shadow: inset -0.15px -0.15px 0px #e9a982;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    -o-transform: translateX(-50%);
+    transform: translateX(-50%);
+    top: -3.15px;
+}
+
+.santa .santa_head .face .beard .mouth {
+    background: #a8744f;
+    z-index: 3;
+    position: absolute;
+    width: 1.125px;
+    height: 0.375px;
+    border-bottom-right-radius: 6px 3.75px;
+    border-bottom-left-radius: 6px 3.75px;
+    left: 50%;
+    top: 0;
+    -webkit-animation: mouthLaugh 4s linear infinite;
+    -moz-animation: mouthLaugh 4s linear infinite;
+    -ms-animation: mouthLaugh 4s linear infinite;
+    -o-animation: mouthLaugh 4s linear infinite;
+    animation: mouthLaugh 4s linear infinite;
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    -o-transform: translateX(-50%);
+    transform: translateX(-50%);
+}
+
+.santa .santa_head .ears:before,
+.santa .santa_head .ears:after {
+    content: " ";
+    width: 1.5px;
+    height: 2.25px;
+    border-radius: 50%;
+    background: radial-gradient(#e9a982, #edcab0);
+    position: absolute;
+    top: 50%;
+    z-index: -1;
+}
+
+.santa .santa_head .ears:before {
+    left: -0.4px;
+    -webkit-transform: rotate(-10deg);
+    -moz-transform: rotate(-10deg);
+    -ms-transform: rotate(-10deg);
+    -o-transform: rotate(-10deg);
+    transform: rotate(-10deg);
+}
+
+.santa .santa_head .ears:after {
+    right: -0.4px;
+    -webkit-transform: rotate(10deg);
+    -moz-transform: rotate(10deg);
+    -ms-transform: rotate(10deg);
+    -o-transform: rotate(10deg);
+    transform: rotate(10deg);
+}
+
+@font-face {
+    font-family: "Mountains of Christmas";
+    font-style: normal;
+    src: local("Mountains of Christmas"), local("MountainsofChristmas-Regular"),
+        url(https://fonts.gstatic.com/s/mountainsofchristmas/v8/dVGBFPwd6G44IWDbQtPewylJhLDHyIrT3I5b5eGTHmw.woff2) format("woff2");
+}
+
+@media screen and (max-width: 1024px) {
+    .window {
+        top: 385px;
+        left: 20px;
+    }
+}
