@@ -12,15 +12,11 @@ import { AuctionResponse, getChainData, ChainData } from '@connext/nxtp-utils';
 import { Text, Card, Button, useWalletModal, ConnectorId, Flex, Input } from 'crox-new-uikit';
 import ReactTooltip from 'react-tooltip';
 import useWave from 'use-wave';
-// import { AnimateGroup, AnimateKeyframes } from 'react-simple-animate';
-// import { css } from "@emotion/react";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-// import CircleLoader from "react-spinners/CircleLoader";
 import Page from '../../components/layout/Page';
 import NetworkSelectModal from './NetworkSelectModal';
 import TokenSelectModal from './TokenSelectModal';
 import { injected, bsc, walletconnect } from "../../utils/connector";
-// import WalletConnector from '../../hooks/useWalletConnector';
 import { useBridgeApprove, useAnyApprove } from '../../hooks/useApprove';
 import useAllowance, {useAnyAllowance} from '../../hooks/useERC20Allowance';
 import useAnyBridge from '../../hooks/useAnyBridge';
@@ -54,10 +50,6 @@ import {
 } from './components/styles';
 
 const Bridge: React.FC = () => {
-
-  // const override = css`
-  //   margin: auto 10px;
-  // `;
 
   ReactModal.defaultStyles.overlay.backgroundColor = 'rgb(0 0 0 / 70%)';
   ReactModal.defaultStyles.overlay.zIndex = '15';
