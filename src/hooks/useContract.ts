@@ -7,10 +7,12 @@ import {
   getCakeAddress,
   getLotteryAddress,
   getLotteryTicketAddress,
-  getPrevMasterChefAddress,
+  getPrevMasterChefAddress, 
+  getBridgeFeeAddress, 
+  getBridgeTokenAddress, 
+  getCroxAddress
 } from "utils/addressHelpers";
 import { poolsConfig } from "config/constants";
-import { PoolCategory } from "config/constants/types";
 import ifo from "config/abi/ifo.json";
 import erc20 from "config/abi/erc20.json";
 import rabbitmintingfarm from "config/abi/rabbitmintingfarm.json";
@@ -20,7 +22,8 @@ import lotteryTicket from "config/abi/lotteryNft.json";
 import masterChef from "config/abi/masterchef.json";
 import prevMasterChef from "config/abi/prevmasterchef.json";
 import sousChef from "config/abi/sousChef.json";
-import sousChefBnb from "config/abi/sousChefBnb.json";
+import feeAbi from "config/abi/fee.json";
+import router from "config/abi/anyRouter.json";
 
 const useContract = (
   abi: AbiItem,
@@ -33,7 +36,9 @@ const useContract = (
   );
 
   useEffect(() => {
-    setContract(new web3.eth.Contract(abi, address, contractOptions));
+    if(address) { 
+      setContract(new web3.eth.Contract(abi, address, contractOptions));
+    }
   }, [abi, address, contractOptions, web3]);
 
   return contract;
@@ -93,3 +98,25 @@ export const useSousChef = (id) => {
   const abi = (rawAbi as unknown) as AbiItem;
   return useContract(abi, config.lpAddresses[process.env.REACT_APP_CHAIN_ID]);
 };
+
+export const useFeeContract = (chainID) => {
+  const abi = (feeAbi as unknown) as AbiItem;
+  return useContract(abi, getBridgeFeeAddress(chainID));
+}
+
+export const useERC20Contract = (chainID) => {
+  const erc20Abi = (erc20 as unknown) as AbiItem;
+  return useContract(erc20Abi, getBridgeTokenAddress(chainID));
+};
+
+export const useERCContract = (chainID) => {
+  const erc20Abi = (erc20 as unknown) as AbiItem;
+  return useContract(erc20Abi, getCroxAddress(chainID));
+};
+
+export const useAnyRouterContract = (routerAddress) => {
+  const routerAbi = (router as unknown) as AbiItem;
+  return useContract(routerAbi, routerAddress);
+};
+
+export default useContract;

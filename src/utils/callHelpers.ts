@@ -1,8 +1,5 @@
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
-import { useWeb3React } from '@web3-react/core'
-import feeAbi from "config/abi/fee.json";
-import { getFeeContract } from "./contractHelpers";
 
 export const approve = async (lpContract, masterChefContract, account) => {
   return lpContract.methods
@@ -156,28 +153,3 @@ export const soushHarvestBnb = async (sousChefContract, account) => {
       return tx.transactionHash;
     });
 };
-
-export const getCharge = async (library, tokenId, sendAmount, chainID) => {
-  const signer = library.getSigner();
-  const useChargeFeeContract = await getFeeContract(signer, chainID);
-  return useChargeFeeContract.
-    chargeFee(tokenId, sendAmount)
-}
-
-export const getFeePro = async (library, tokenId, chainID) => {
-  const signer = library.getSigner();
-  let useChargeFeeContract
-  try {
-    useChargeFeeContract = await getFeeContract(signer, chainID);
-  } catch (err) {
-    console.log("err => ", err);
-  }
-
-  let tokeninfo;
-  try {
-    tokeninfo = useChargeFeeContract.tokens(tokenId);
-  } catch (err) {
-    console.log("err => ", err);
-  }
-  return tokeninfo;
-}

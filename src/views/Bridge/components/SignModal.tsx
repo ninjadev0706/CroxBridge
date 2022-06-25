@@ -149,7 +149,7 @@ const SignModal = ({ sendPrepare, txId, fromChain, toChain, receivingToken, sign
               <Tooltip isTooltipDisplayed={isTxTooltipDisplayed} style={{ width: "70px", left: "85px" }}>Copied</Tooltip>
             </Flex>
           </Text>
-          <LinkExternal>{!isSmMobile && <Text fontSize='15px' color='#2d74c4'>View TX</Text>}</LinkExternal>
+          <LinkExternal href="/explorer">{!isSmMobile && <Text fontSize='15px' color='#2d74c4'>View TX</Text>}</LinkExternal>
         </Flex>
         <Flex justifyContent='space-between' style={{display: isSmMobile ? 'block' : 'flex'}} m='20px 0'>
           <div>

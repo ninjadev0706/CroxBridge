@@ -9,7 +9,7 @@ import { getCakeAddress } from 'utils/addressHelpers'
 import sample from 'lodash/sample'
 import useRefresh from './useRefresh'
 
-const useTokenBalance = (tokenAddress: string) => {
+const useTokenBalance = (tokenAddress: string | null) => {
   const [balance, setBalance] = useState(new BigNumber(0))
   const { account, library } = useWeb3React()
   const { fastRefresh } = useRefresh()
@@ -20,7 +20,7 @@ const useTokenBalance = (tokenAddress: string) => {
       setBalance(new BigNumber(res))
     }
 
-    if (account && library) {
+    if (account && library && tokenAddress) {
       fetchBalance()
     }
   }, [account, library, tokenAddress, fastRefresh])
@@ -83,7 +83,7 @@ export const useToTokenBalance = (tokenAddress: string, rpc) => {
       setBalance(new BigNumber(res))
     }
 
-    if (account && rpc) {
+    if (account && rpc && tokenAddress) {
       fetchBalance()
     }
   }, [account, tokenAddress, fastRefresh, rpc])

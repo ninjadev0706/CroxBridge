@@ -59,7 +59,7 @@ const LatestItem = styled.li`
     &:after {
         width: 30px;
         height: 30px;
-        background-image: url('/images/loading.gif');
+        background-image: url('/images/loading.svg');
         background-repeat: no-repeat;
         background-size: contain;
         content: '';

@@ -1,12 +1,12 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import Web3 from 'web3'
 import { useWeb3React } from '@web3-react/core'
 import { HttpProviderOptions } from 'web3-core-helpers'
-import { provider as ProviderType } from 'web3-core'
 import getRpcUrl from 'utils/getRpcUrl'
 
 const RPC_URL = getRpcUrl()
 const httpProvider = new Web3.providers.HttpProvider(RPC_URL, { timeout: 10000 } as HttpProviderOptions)
+// const simpleRpcProvider = new Web3Provider((window as any).ethereum);
 
 /**
  * Provides a web3 instance using the provider provided by useWallet
@@ -15,13 +15,14 @@ const httpProvider = new Web3.providers.HttpProvider(RPC_URL, { timeout: 10000 }
  */
 const useWeb3 = () => {
   const { library } = useWeb3React()
-  const refEth = useRef(library.provider)
-  const [web3, setweb3] = useState(new Web3(library.provider || httpProvider))
+  // const refEth = useRef(library)
+  const [web3, setweb3] = useState(new Web3(httpProvider))
 
   useEffect(() => {
-    if (library.provider !== refEth.current) {
-      setweb3(new Web3(library.provider || httpProvider))
-      refEth.current = library.provider
+    if (library) {
+      setweb3(new Web3(library.provider))
+    } else {
+      setweb3(new Web3(httpProvider))
     }
   }, [library])
 

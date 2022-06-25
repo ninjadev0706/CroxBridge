@@ -51,7 +51,6 @@ const TxTable: React.FC<TxData> = ({ columns, transactions }) => {
     setChainDatas(chainDetail)
   }, [])
 
-  // console.log("transactions =>", transactions)
   transactions.sort((a, b) => a.preparedAt > b.preparedAt ? -1 : 1)
 
   useEffect(() => {
@@ -78,8 +77,6 @@ const TxTable: React.FC<TxData> = ({ columns, transactions }) => {
               {columns.map((column) => (
                 <TableCell
                   key={column.key}
-                  // align={column.align}
-                  // style={{ minWidth: column.minWidth }}
                   className="table-header"
                 >
                   {column.title}
@@ -148,16 +145,6 @@ const TxTable: React.FC<TxData> = ({ columns, transactions }) => {
                         {new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(row.preparedAt * 1000)}
                       </TableRow>
                     </TableCell>
-                    {/* {columns.map((column) => {
-                      const value = row[column.id];
-                      return (
-                        <TableCell className="table-cell" key={column.id} align={column.align}>
-                          {column.format && typeof value === 'number'
-                            ? column.format(value)
-                            : value}
-                        </TableCell>
-                      );
-                    })} */}
                   </TableRow>
                 );
               })}

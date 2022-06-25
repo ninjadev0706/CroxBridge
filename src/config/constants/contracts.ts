@@ -2,6 +2,8 @@ export default {
   cake: {
     56: "0x2c094F5A7D1146BB93850f629501eB749f6Ed491",
     97: "0x7F511033cFDa8dF0189f9c9BEaD981ae0496901C",
+    137: '0x381785593F9BAcE15aF908ac108b5f538155Ff3e',
+    250: '0x381785593F9BAcE15aF908ac108b5f538155Ff3e'
   },
   masterChef: {
     56: "0x3d34883c175Ba72dDa0108EA1A5faFD6Fa673DB6",
@@ -41,5 +43,9 @@ export default {
   },
   bridgeFee: {
     4: "0x52bB1B1642cE0363Bf7ae337926C77Db64D8940B",
+  },
+  tt: {
+    4: "0xf1204930b284caBcD111cd8acC7DcC492EAdD40e",
+    5: "0xf1204930b284caBcD111cd8acC7DcC492EAdD40e",
   },
 };
