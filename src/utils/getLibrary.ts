@@ -1,9 +1,8 @@
 import { Web3Provider } from '@ethersproject/providers';
-import { ethers } from 'ethers';
 import type { Web3Provider as ProviderType } from '@ethersproject/providers';
 
-export function getLibrary(provider: any) {
-  const library = new ethers.providers.Web3Provider(provider);
+export function getLibrary(provider: any): ProviderType {
+  const library = new Web3Provider(provider);
   library.pollingInterval = 12000;
   return library;
 }

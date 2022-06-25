@@ -1,18 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { ethers } from 'ethers';
+import BigNumber from 'bignumber.js';
 import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React } from '@web3-react/core';
 import { BsArrowLeftRight, BsPatchQuestion, BsChevronDown } from 'react-icons/bs';
 import ReactModal from 'react-modal';
 import CircularProgress from '@mui/material/CircularProgress';
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { NxtpSdkEvents, NxtpSdk, GetTransferQuote, HistoricalTransactionStatus } from "@connext/nxtp-sdk";
+import { NxtpSdkEvents, NxtpSdk, GetTransferQuote } from "@connext/nxtp-sdk";
 import { AuctionResponse, getChainData, ChainData } from '@connext/nxtp-utils';
 import { Text, Card, Button, useWalletModal, ConnectorId, Flex, Input } from 'crox-new-uikit';
 import ReactTooltip from 'react-tooltip';
-import styled from "styled-components";
 import useWave from 'use-wave';
-import Explorer from 'views/Explorer';
 // import { AnimateGroup, AnimateKeyframes } from 'react-simple-animate';
 // import { css } from "@emotion/react";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -20,171 +19,41 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Page from '../../components/layout/Page';
 import NetworkSelectModal from './NetworkSelectModal';
 import TokenSelectModal from './TokenSelectModal';
-import { injected, bsc } from "../../utils/connector";
-import WalletConnector from '../../hooks/useWalletConnector';
-// import { useBridgeApprove } from '../../hooks/useApprove';
+import { injected, bsc, walletconnect } from "../../utils/connector";
+// import WalletConnector from '../../hooks/useWalletConnector';
+import { useBridgeApprove, useAnyApprove } from '../../hooks/useApprove';
+import useAllowance, {useAnyAllowance} from '../../hooks/useERC20Allowance';
+import useAnyBridge from '../../hooks/useAnyBridge';
+import { useAnyBridgeData, useRouterData, useTxStatus } from '../../hooks/api';
+import useFeePro, { useCharge } from '../../hooks/useFee';
 import { chainConfig, swapConfig } from '../../config/chainConfig';
+import { anyConfig } from '../../config/anyConfig';
+import { connextConfig } from '../../config/connextConfig';
 import networkList from './NetworkList';
 import { getBalanceNumber } from '../../utils/formatBalance';
 import useTokenBalance, { useToTokenBalance } from '../../hooks/useTokenBalance';
 import ConfirmModal from './components/ConfirmModal';
 import SignModal from './components/SignModal';
-import { getCharge, getFeePro } from '../../utils/callHelpers';
+import ConnextBtn from './components/ConnextBtn';
+import AnySwapBtn from './components/AnySwapBtn';
 import './walletButton.scss';
-
-interface IBridgeTransaction {
-  transactionId: string;
-  fromChainId: number;
-  fromTokenAddress?: string;
-  fromAmount: string;
-  toChainId: number;
-  toTokenAddress?: string;
-  toAmount: string;
-  preparedAt: number;
-  status: string;
-  expiry?: number;
-  fulfilledTxHash?: string;
-  action: any;
-}
+import {
+  SelectBridge,
+  BridgeItem,
+  ItemWrap,
+  InputSelectorButton,
+  InputNetworkSelectorButton,
+  InputBalance,
+  MaxButton,
+  BinanceButton,
+  PolygonButton,
+  ActiveTx,
+  customStyles,
+  Tooltip,
+  Nodata
+} from './components/styles';
 
 const Bridge: React.FC = () => {
-
-  const InputSelectorButton = styled(Button)`
-    display: flex;
-    padding: 10px;
-    background-color: transparent;
-    border: none;
-    width: 180px;
-    box-shadow: none;
-    align-items: center;
-    @media screen and (max-width: 800px) {
-      padding: 3px 12px;
-    }
-    &:hover:not(:disabled):not(.button--disabled):not(:active) {
-      background-color: transparent;
-      border: none;
-    }
-    &:active {
-      background-color: transparent;
-      box-shadow: none;
-    }
-    &:focus:not(:active) {
-      box-shadow: none;
-    }
-  `
-
-  const InputNetworkSelectorButton = styled(Button)`
-    display: flex;
-    padding: 10px;
-    background-color: transparent;
-    border: none;
-    box-shadow: none;
-    align-items: center;
-    @media screen and (max-width: 500px) {
-      display: contents;
-      .networkname {
-        text-align: center !important;
-      }
-    }
-    &:hover:not(:disabled):not(.button--disabled):not(:active) {
-      background-color: transparent;
-      border: none;
-    }
-    &:active {
-      background-color: transparent;
-      box-shadow: none;
-    }
-    &:focus:not(:active) {
-      box-shadow: none;
-    }
-  `
-
-  const InputBalance = styled.input`
-    font-size: 20px;
-    color: #ced0f9;
-    font-weight: 400;
-    border: none;
-    outline: none;
-    width: 356px;
-    text-align: right;
-    background-color: transparent;
-    padding: 0 15px;
-    @media screen and (max-width: 600px) {
-      padding: 0 10px;
-      width: 67%;
-    }
-  `
-
-  const MaxButton = styled.button`
-    display: flex;
-    color: white;
-    font-weight: 400;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #2d74c4;
-    margin: auto 0;
-    border: none;
-    border-radius: 10px;
-    transition: .5s all;
-    &:hover {
-      opacity: 0.8;
-    }
-  `
-
-  const BinanceButton = styled.div`
-    background-color: transparent;
-    border: none;
-  `
-
-  const PolygonButton = styled.div`
-    background-color: transparent;
-    border: none;
-  `
-
-  const Tooltip = styled.p<{ isTooltipDisplayed: boolean }>`
-    display: ${({ isTooltipDisplayed }) => (isTooltipDisplayed ? "block" : "none")};
-    bottom: -22px;
-    right: 0;
-    left: 0;
-    text-align: center;
-    background-color: #3b3c4e;
-    color: white;
-    border-radius: 16px;
-    opacity: 0.7;
-    padding-top: 4px;
-    position: absolute;
-  `;
-
-  const ActiveTx = styled.div`
-    padding: 10px;
-    background-color: #23242F;
-    border-radius: 10px;
-    text-align: center;
-    width: 300px;
-    transition: all ease 200ms;
-    @media screen and (max-width: 1000px) {
-      max-width: 500px;
-      width: 90%;
-      margin: auto;
-    }
-  `
-
-  const customStyles = {
-    body: {
-      overflow: 'hidden'
-    },
-    content: {
-      top: '50%',
-      left: '50%',
-      right: 'auto',
-      bottom: 'auto',
-      marginRight: '-50%',
-      transform: 'translate(-50%, -50%)',
-      backgroundColor: "transparent",
-      border: 'none',
-      overflow: 'hidden'
-    },
-  };
 
   // const override = css`
   //   margin: auto 10px;
@@ -193,16 +62,11 @@ const Bridge: React.FC = () => {
   ReactModal.defaultStyles.overlay.backgroundColor = 'rgb(0 0 0 / 70%)';
   ReactModal.defaultStyles.overlay.zIndex = '15';
 
-  // const isMobile = useMediaQuery("(max-width: 1250px)");
   const isSmMobile = useMediaQuery("(max-width: 800px)");
 
-  // const loadingBridge = true;
-
-  const [isSelect, setSelectTab] = useState(false);
   const [sdk, setSdk] = useState<NxtpSdk>();
   const [chainData, setChainData] = useState<Map<string, ChainData>>();
   const [auctionResponse, setAuctionResponse] = useState<AuctionResponse>();
-  const [transactions, setTransactions] = useState<IBridgeTransaction[]>([]);
   const [isChangeChain, setFromChain] = useState(false);
   const [fromChain, selectFromNetwork] = useState(null)
   const [toChain, selectToNetwork] = useState(null)
@@ -238,13 +102,37 @@ const Bridge: React.FC = () => {
   const [isTxTooltipDisplayed, setTxTooltipDisplayed] = useState(false);
   const [isActiveTx, setActiveTx] = useState(false);
   const [isProcess, setProcess] = useState(false);
+  const [requestedApproval, setRequestedApproval] = useState(false);
+  const [selectedBridge, setSelectBridge] = useState(0);
+  const [anyRouter, setAnyRouter] = useState(null);
+  const [showConnext, setShowConnext] = useState(false);
+  const [showAny, setShowAny] = useState(false);
 
   const [isNetworkSelectModalOpen, setIsNetworkSelectModalOpen] = useState({ show: false, from: false, to: false });
 
-  const { chainId, library, deactivate, activate, account } = useWeb3React();
-  const walletconnect = WalletConnector();
+  const { chainId, library, account, deactivate, activate } = useWeb3React();
 
-  // const isApproved = account && allowance && allowance.isGreaterThan(0);
+  const { onApprove } = useBridgeApprove();
+  const { onAnyApprove } = useAnyApprove();
+  const { onBridgeData, anyChaindata } = useAnyBridgeData();
+  const { onTxStatus, txStatus } = useTxStatus();
+  const { onRouterData, anyRouterInfo } = useRouterData();
+  const anyRouterAddress = useMemo(() => {
+    if (sendingToken && anyRouterInfo) {
+      return anyRouterInfo.router;
+    }
+    return null;
+  }, [anyRouterInfo, selectedBridge, sendingToken]);
+  const { allowance, onAllowance } = useAllowance();
+  const { anyAllowance, onAnyAllowance } = useAnyAllowance();
+  const { onFeePro, feeAmount } = useFeePro();
+  const { onChargeFee } = useCharge();
+
+  const { onAnyBridge, txHaxhId } = useAnyBridge(anyRouterAddress);
+  const isApproved = account && allowance && new BigNumber(allowance).isGreaterThan(0);
+  const isAnyApprove = account && anyAllowance && new BigNumber(anyAllowance).isGreaterThan(0);
+
+  console.log("txHaxhId => ", txHaxhId);
 
   const handleLogin = (connectorId: ConnectorId) => {
     if (connectorId === "walletconnect") {
@@ -255,6 +143,7 @@ const Bridge: React.FC = () => {
     }
     return activate(injected);
   };
+
   const { onPresentNewConnectModal } = useWalletModal(
     handleLogin,
     deactivate,
@@ -347,13 +236,15 @@ const Bridge: React.FC = () => {
       setWarning("Enter an amount")
     } else if (receivedAddress === '') {
       setWarning("Enter an address")
+    } else if (selectedBridge === 0) {
+      setWarning("Select Bridge")
     } else {
       setWarning(null)
     }
     if (Number(sendAmount) > currentFromTokenBalance) {
       setError("Insufficient Balance")
     }
-  }, [sendAmount, receivedAddress, isChangeChain, account, sendingToken, receivingToken])
+  }, [sendAmount, receivedAddress, isChangeChain, account, sendingToken, receivingToken, selectedBridge])
 
   const availableTokenBal = getBalanceNumber(useTokenBalance(curFromTokenAddress))
   const availableToTokenBal = getBalanceNumber(useToTokenBalance(curToTokenAddress, rpcs));
@@ -361,7 +252,6 @@ const Bridge: React.FC = () => {
   useEffect(() => {
     if (chainData && receivingToken) {
       const rpc = chainData.get(toChain.chainID.toString()).rpc;
-      console.log("rpc => ", rpc)
       setRpcs(rpc)
     }
   }, [chainData, receivingToken])
@@ -473,12 +363,47 @@ const Bridge: React.FC = () => {
     }
   }
 
+  const ConfirmButton = async () => {
+    if (!auctionResponse) {
+      getTransferQuote();
+    } else if (isApproved) {
+      openConfirmModal();
+    } else {
+      setRequestedApproval(true);
+      await onApprove(sendingToken.assets[fromChain.chainID],
+        ethers.utils.parseUnits(sendAmount, 18).toString());
+      setRequestedApproval(false);
+      onAllowance(sendingToken.assets[fromChain.chainID]);
+    }
+  }
+
+  const AnyConfirm = async () => {
+    if (anyRouterAddress) {
+      console.log("anyRouterAddress => ", anyRouterAddress);
+      if (!isAnyApprove) {
+        setRequestedApproval(true);
+        await onAnyApprove(anyRouterAddress, ethers.utils.parseUnits(sendAmount, sendingToken.tokenDecimal).toString());
+        setRequestedApproval(false);
+        onAnyAllowance(anyRouterAddress)
+      } else {
+        await onAnyBridge(anyRouterInfo.anyToken.address, receivedAddress, ethers.utils.parseUnits(sendAmount, 18).toString(), toChain.chainID)
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (sendingToken) {
+      onFeePro(sendingToken.index);
+    }
+  }, [sendingToken])
+
   const getTransferQuote = async (): Promise<GetTransferQuote | undefined> => {
     if (!sdk || loading) {
       return;
     }
     setError('')
     setLoading(true);
+    const fee = (Number(feeAmount) * Number(sendAmount) / 100).toString();
     try {
       if (sendingAsset && receivingAsset && !loading) {
         let response;
@@ -491,7 +416,7 @@ const Bridge: React.FC = () => {
             // preferredRouters: ["0x9d166026c09edf25bf67770d52a2cb7ddd4008b4"],
             receivingAddress: receivedAddress,
             amount: ethers.utils
-              .parseUnits(sendAmount, 18)
+              .parseUnits((Number(sendAmount) - Number(fee)).toString(), 18)
               .toString(),
             expiry: Math.floor(Date.now() / 1000) + 3600 * 24 * 3, // 3 days
           });
@@ -506,10 +431,10 @@ const Bridge: React.FC = () => {
           18,
         );
 
-        // const gasFeeAmounts = ethers.utils.formatUnits(
-        //   response?.gasFeeInReceivingToken ?? ethers.constants.Zero,
-        //   18,
-        // );
+        const gasFeeAmounts = ethers.utils.formatUnits(
+          response?.gasFeeInReceivingToken ?? ethers.constants.Zero,
+          18,
+        );
 
         const relayerFees = ethers.utils.formatUnits(
           response?.metaTxRelayerFee ?? ethers.constants.Zero,
@@ -525,14 +450,10 @@ const Bridge: React.FC = () => {
 
         const txID = response?.bid.transactionId;
 
-        const gasFeeAmounts = await getFeePro(library, sendingToken.index, fromChain.chainID);
-        const fee = (Number(gasFeeAmounts.feePercent) * Number(sendAmount) / 100).toString();
-
-        console.log("gasFeeAmounts => ", gasFeeAmounts);
-
         setRouterAddress(routerAddr);
         setReceivedAmount(receivedAmounts);
-        setGasFeeAmount(fee);
+        // setGasFeeAmount(fee);
+        setGasFeeAmount(gasFeeAmounts);
         setRelayerFee(relayerFees);
         setRouterFee(routerFee);
         setTx(txID);
@@ -544,8 +465,6 @@ const Bridge: React.FC = () => {
     setLoading(false);
   };
 
-  // const onApprove = useBridgeApprove(fromChain.chainID, ethers.utils.parseUnits(sendAmount, 18).toString())
-
   const handleBridge = async () => {
     if (!sdk || !auctionResponse) {
       return;
@@ -556,18 +475,16 @@ const Bridge: React.FC = () => {
 
     try {
       const trans = await sdk.prepareTransfer(auctionResponse, true);
-      getCharge(library, sendingToken.index, sendAmount, fromChain.chainID);
+      onChargeFee(sendingToken.index, sendAmount);
       setTransfer(trans);
       setSignModal(true);
       setSendPrepare(true);
     } catch (err: any) {
       setError("User denied transaction signature");
-      // onDismiss();
       setProcess(false)
     }
     closeConfirmModal();
     setLoading(false);
-    // onDismiss();
   }
 
   const WaitRouter = async () => {
@@ -600,9 +517,7 @@ const Bridge: React.FC = () => {
     try {
       await sdk.fulfillTransfer(prepared, true);
     } catch (err: any) {
-      // setError("User denied transaction signature");
-      // setStep(0)
-      // setLoading(false);
+      console.log(err)
     }
 
     try {
@@ -613,7 +528,6 @@ const Bridge: React.FC = () => {
       );
       setActiveTx(false);
       setSuccess(true);
-      // switchtoChain();
     } catch (err: any) {
       setError(err)
     }
@@ -636,224 +550,24 @@ const Bridge: React.FC = () => {
     color: 'white',
   })
 
-  const getAsset = (_chainId: number, _address: string) => {
-    const assetId = chainData.get(_chainId.toString())?.assetId;
-    if (assetId) {
-      const key = Object.keys(assetId).find(
-        (id) => id.toLowerCase() === _address.toLowerCase(),
-      );
-      if (key) {
-        return assetId[key];
-      }
-    }
-    return null;
-  };
-
-  const parseTx = (tx: any): IBridgeTransaction => {
-    const { crosschainTx, status, preparedTimestamp, fulfilledTxHash } = tx;
-    const { receiving, sending, invariant } = crosschainTx;
-    const variant = receiving ?? sending;
-    const { sendingChainId, sendingAssetId } = invariant;
-    const _sendingAsset = getAsset(sendingChainId, sendingAssetId);
-    const sentAmount = ethers.utils.formatUnits(
-      sending?.amount ?? '0',
-      _sendingAsset?.decimals ?? '18',
-    );
-    const { receivingChainId, receivingAssetId } = invariant;
-
-    const _receivingAsset = getAsset(receivingChainId, receivingAssetId);
-    let sendingSelectToken;
-    if (_sendingAsset === null) {
-      swapConfig.map((each) => {
-        const lowerAsset = each.assets[sendingChainId];
-        if (lowerAsset && lowerAsset.toLocaleLowerCase() === sendingAssetId.toString()) {
-          sendingSelectToken = each;
-        }
-        return null;
-      })
-    }
-    let receivingSelectToken;
-    if (_receivingAsset === null) {
-      swapConfig.map((each) => {
-        const lowerAsset = each.assets[receivingChainId];
-        if (lowerAsset && lowerAsset.toLocaleLowerCase() === receivingAssetId.toString()) {
-          receivingSelectToken = each;
-        }
-        return null;
-      })
-    }
-    const _receivedAmount = ethers.utils.formatUnits(
-      receiving?.amount ?? '0',
-      _receivingAsset?.decimals ?? '18',
-    );
-    const { transactionId } = invariant;
-
-    return {
-      transactionId,
-      fromChainId: sendingChainId,
-      fromTokenAddress: _sendingAsset?.mainnetEquivalent,
-      fromAmount: `${+(+sentAmount).toFixed(6)} ${_sendingAsset?.symbol ?? sendingSelectToken.name}`,
-      toChainId: receivingChainId,
-      toTokenAddress: _receivingAsset?.mainnetEquivalent,
-      toAmount: `${+(+_receivedAmount).toFixed(6)} ${_receivingAsset?.symbol ?? receivingSelectToken.name}`,
-      preparedAt: preparedTimestamp,
-      status,
-      expiry: variant.expiry,
-      fulfilledTxHash,
-      action: tx,
-    };
-  };
-
-  const parseTxs = (txs: any[]): IBridgeTransaction[] =>
-    txs.map((tx) => parseTx(tx));
-
-  const columns = [
-    {
-      title: 'From',
-      key: 'from',
-    },
-    {
-      title: 'To',
-      key: 'to',
-    },
-    {
-      title: 'Source Token',
-      key: 'sendingtoken',
-    },
-    {
-      title: 'Destination Token',
-      key: 'receivngtoken',
-    },
-    {
-      title: 'Status',
-      key: 'status',
-    },
-    {
-      title: 'Time',
-      key: 'time',
-    },
-  ];
-
   useEffect(() => {
-    const { ethereum } = window as any
-    const init = async () => {
-      if ((!ethereum || !library)) {
+    (async () => {
+      const { ethereum } = window as any
+      if ((!ethereum || !library || selectedBridge !== 1)) {
         return;
       }
       const _provider: Web3Provider = library || new Web3Provider(ethereum);
 
       const _signer = _provider.getSigner();
 
-      try {
-        const _sdk = await NxtpSdk.create({
-          chainConfig,
-          signer: _signer,
-        });
+      const _sdk = await NxtpSdk.create({
+        chainConfig,
+        signer: _signer,
+      });
 
-        const activeTxs = await _sdk.getActiveTransactions();
-        const historicalTxs = await _sdk.getHistoricalTransactions();
-        setTransactions(parseTxs([...activeTxs, ...historicalTxs]));
-
-        _sdk.attach(NxtpSdkEvents.SenderTransactionPrepared, (data) => {
-          const { amount, expiry, preparedBlockNumber, ...invariant } =
-            data.txData;
-          const tx = {
-            crosschainTx: {
-              invariant,
-              sending: { amount, expiry, preparedBlockNumber },
-            },
-            preparedTimestamp: Math.floor(Date.now() / 1000),
-            bidSignature: data.bidSignature,
-            encodedBid: data.encodedBid,
-            encryptedCallData: data.encryptedCallData,
-            status: NxtpSdkEvents.SenderTransactionPrepared,
-          };
-          setTransactions([parseTx(tx), ...transactions]);
-        });
-
-        _sdk.attach(NxtpSdkEvents.ReceiverTransactionPrepared, (data) => {
-          const { amount, expiry, preparedBlockNumber, ...invariant } =
-            data.txData;
-          const index = transactions.findIndex(
-            (t) => t.transactionId === invariant.transactionId,
-          );
-
-          if (index === -1) {
-            const tx = {
-              preparedTimestamp: Math.floor(Date.now() / 1000),
-              crosschainTx: {
-                invariant,
-                sending: {} as any, // Find to do this, since it defaults to receiver side info
-                receiving: { amount, expiry, preparedBlockNumber },
-              },
-              bidSignature: data.bidSignature,
-              encodedBid: data.encodedBid,
-              encryptedCallData: data.encryptedCallData,
-              status: NxtpSdkEvents.ReceiverTransactionPrepared,
-            };
-            setTransactions([parseTx(tx), ...transactions]);
-          } else {
-            const txs = [...transactions];
-            const tx = { ...txs[index] };
-            txs[index] = {
-              ...tx,
-              status: NxtpSdkEvents.ReceiverTransactionPrepared,
-            };
-            setTransactions(txs);
-          }
-        });
-
-        _sdk.attach(
-          NxtpSdkEvents.ReceiverTransactionFulfilled,
-          async (data) => {
-            const { transactionHash, txData } = data;
-            const index = transactions.findIndex(
-              (t) => t.transactionId === txData.transactionId,
-            );
-            if (index >= 0) {
-              const txs = [...transactions];
-              const tx = { ...txs[index] };
-              txs[index] = {
-                ...tx,
-                status: HistoricalTransactionStatus.FULFILLED,
-                fulfilledTxHash: transactionHash,
-                expiry: undefined,
-              };
-              setTransactions(txs);
-            }
-          },
-        );
-
-        _sdk.attach(
-          NxtpSdkEvents.ReceiverTransactionCancelled,
-          async (data) => {
-            const index = transactions.findIndex(
-              (t) => t.transactionId === data.txData.transactionId,
-            );
-            if (index >= 0) {
-              const txs = [...transactions];
-              const tx = { ...txs[index] };
-              txs[index] = {
-                ...tx,
-                status: HistoricalTransactionStatus.CANCELLED,
-                fulfilledTxHash: undefined,
-                expiry: undefined,
-              };
-              setTransactions(txs);
-            }
-          },
-        );
-
-        setSdk(_sdk);
-      } catch (err) {
-        // console.log(err);
-      }
-    };
-    if (chainId && ethereum && chainData) {
-      init();
-    }
-  }, [chainId, chainData]);
-
+      setSdk(_sdk);
+    })();
+  }, [account, chainId, library])
 
   // const animationGroup = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18']
   // const mobileAnimationGroup = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']
@@ -888,506 +602,320 @@ const Bridge: React.FC = () => {
     }
   }, [fromChain, toChain])
 
+  useEffect(() => {
+    if (fromChain && sendingToken) {
+      onRouterData(fromChain.chainID, sendingToken.assets[fromChain.chainID]);
+    }
+  }, [fromChain, sendingToken])
+
+
+  useEffect(() => {
+    if (selectedBridge === 2 && fromChain && sendingToken) {
+      onBridgeData(fromChain.chainID);
+    }
+  }, [selectedBridge])
+
+  useEffect(() => {
+    if (anyRouterInfo) {
+      setAnyRouter(anyRouterInfo);
+    }
+  }, [anyRouterInfo])
+
+  useEffect(() => {
+    const txInterval = setInterval(() => {
+      if (txHaxhId && selectedBridge === 2) {
+        onTxStatus(txHaxhId);
+      }
+    }, 5000)
+    return () => {
+      clearInterval(txInterval);
+    }
+  }, [txHaxhId, selectedBridge])
+
+  useEffect(() => {
+    if (selectedBridge === 2) {
+      console.log("txStatus => ", txStatus);
+    }
+  }, [txStatus])
+
+  useEffect(() => {
+    if (sendingAsset && fromChain) {
+      if (connextConfig.find(connext => sendingAsset === connext.assets[fromChain.chainID])) {
+        setShowConnext(true);
+      }
+      if (anyConfig.find(any => sendingAsset === any.assets[fromChain.chainID])) {
+        setShowAny(true);
+      }
+    }
+  }, [sendingAsset, fromChain])
+
   return (
     <>
-      {
-        !isSelect ?
-          <Page>
-            <Flex style={{ justifyContent: "center" }}>
-              <Button color="white" mb="10px" style={{
-                textAlign: 'center', fontSize: '30px', padding: "10px 22px",
-                background: "#3b3c4e", cursor: 'pointer', borderRadius: '0'
-              }} onClick={() => setSelectTab(false)}>
-                BRIDGE
-              </Button>
-              <Button color="white" mb="10px" style={{
-                textAlign: 'center', fontSize: '30px', padding: "10px 22px",
-                background: "#22232d", cursor: 'pointer', borderRadius: '0'
-              }} onClick={() => setSelectTab(true)}>
-                View Txns
-              </Button>
-            </Flex>
-            <div>
-              <Text fontSize="14px" color="#8B8CA7" style={{ textAlign: 'center' }} >(Launching Soon)</Text>
-              <Text fontSize="14px" color="#8B8CA7" style={{ textAlign: 'center' }} >You can bridge your assets faster & cheaper across blockchains using CROX Bridge</Text>
-            </div>
-            <Flex className='bridge-container'>
-              <div className='bridge-content'>
-                <Card style={isSmMobile ? { padding: '20px 10px', backgroundColor: '#2C2D3A' } : { padding: '45px 35px 35px 35px', backgroundColor: '#2C2D3A' }}>
+      <Page>
+        <Flex style={{ justifyContent: "center", fontSize: '40px', color: 'white', fontWeight: '500', paddingTop: '20px' }}>
+          CROX BRIDGE
+        </Flex>
+        <div>
+          <Text fontSize="14px" color="#8B8CA7" style={{ textAlign: 'center' }} >(Launching Soon)</Text>
+          <Text fontSize="14px" color="#8B8CA7" style={{ textAlign: 'center' }} >You can bridge your assets faster & cheaper across blockchains using CROX Bridge</Text>
+        </div>
+        <Flex className='bridge-container'>
+          <div className='bridge-content'>
+            <Card style={isSmMobile ? { padding: '20px 10px', backgroundColor: '#2C2D3A' } : { padding: '45px 35px 35px 35px', backgroundColor: '#2C2D3A' }}>
 
-                  <Flex alignItems='center' justifyContent='space-between' mb='20px' style={{ width: '100%' }}>
-                    <div style={{ width: "43%" }}>
-                      <Text color="#8B8CA7">From</Text>
-                      <div ref={wave}>
-                        <Card style={{ display: 'flex', background: "#3b3c4e", border: '1px solid #3B3C4E', borderRadius: '10px', justifyContent: 'center', boxShadow: 'none' }}>
-                          <BinanceButton>
-                            <InputNetworkSelectorButton onClick={() => setIsNetworkSelectModalOpen({ ...isNetworkSelectModalOpen, show: true, from: true, to: false })}>
-                              {isSmMobile && <Flex mt='5px' />}
-                              {fromChain && <Flex style={{ justifyContent: isSmMobile && 'center' }}>
-                                <img src={`images/network/${fromChain.img}_net.png`} alt={`${fromChain.title} icon`} style={{ width: '25px' }} />
-                              </Flex>
-                              }
-                              <Text fontSize={isSmMobile ? "16px" : "18px"} className="networkname" color="#ced0f9" style={{ textAlign: 'left', margin: '0 5px' }}>{fromChain && fromChain.title}</Text>
-                              <BsChevronDown fontSize='12px' style={{ width: isSmMobile && '100%' }} />
-                            </InputNetworkSelectorButton>
-                          </BinanceButton>
-                        </Card>
-                      </div>
-                    </div>
-
-                    <BsArrowLeftRight style={{ marginTop: 20, cursor: "pointer" }} onClick={changeChain} />
-
-                    <div style={{ width: "43%" }}>
-                      <Text color="#8B8CA7">To</Text>
-                      <div ref={wave}>
-                        <Card style={{ display: 'flex', background: "#3b3c4e", border: '1px solid #3B3C4E', borderRadius: '10px', justifyContent: 'center', boxShadow: 'none' }}>
-                          <PolygonButton>
-                            <InputNetworkSelectorButton onClick={() => setIsNetworkSelectModalOpen({ ...isNetworkSelectModalOpen, show: true, from: false, to: true })}>
-                              {isSmMobile && <Flex mt='5px' />}
-                              {toChain && <Flex style={{ justifyContent: isSmMobile && 'center' }}><img src={`images/network/${toChain.img}_net.png`} alt={`${toChain.title} icon`} style={{ width: '25px' }} /></Flex>}
-                              <Text fontSize={isSmMobile ? "16px" : "18px"} className="networkname" color="#ced0f9" m="0 5px" style={{ textAlign: 'left' }}>{toChain && toChain.title}</Text>
-                              <BsChevronDown fontSize='12px' style={{ width: isSmMobile && '100%' }} />
-                            </InputNetworkSelectorButton>
-                          </PolygonButton>
-                        </Card>
-                      </div>
-                    </div>
-                  </Flex>
-
-                  <Card m='8px 0' style={{ background: "#00000038", border: '1px solid #3B3C4E', borderRadius: '10px', boxShadow: 'none' }}>
-                    <div className='sendbox'>
-                      <Text color="#8B8CA7">You send</Text>
-                      <Text color="#8B8CA7">Balance: {currentFromTokenBalance.toFixed(2)}</Text>
-
-                    </div>
-                    <Flex style={isSmMobile ? { marginBottom: "3px" } : { marginBottom: "7.5px" }}>
-                      <InputSelectorButton onClick={() => setIsTokenSelectModal(true)}>
-                        {sendingToken && <img src={`images/coins/${sendingToken && sendingToken.name}.png`} alt={sendingToken && sendingToken.name} style={{ width: '24px' }} />}
-                        <Text fontSize={isSmMobile ? "15px" : "18px"} m='0 5px' color="#ced0f9" >{sendingToken ? sendingToken.name : 'Select Token'}</Text>
-                        <BsChevronDown fontSize='12px' />
-                      </InputSelectorButton>
-                      <MaxButton onClick={selectMaxBal}>Max</MaxButton>
-                      <input className="bridge-input" type="text" placeholder="0.0" value={sendAmount} onChange={handleChangeAmount} />
-                    </Flex>
-                  </Card>
-
-                  <div>
-                    <Card m='8px 0' style={{ background: "#00000038", border: '1px solid #3B3C4E', borderRadius: '10px', boxShadow: 'none' }}>
-                      <div className='sendbox'>
-                        <Text color="#8B8CA7" style={isSmMobile ? { margin: '0px' } : { margin: '0', marginBottom: "0" }} >Receive Amount</Text>
-                        <Text color="#8B8CA7">Balance: {currentToTokenBalance.toFixed(2)}</Text>
-                      </div>
-                      <Flex style={isSmMobile ? { marginBottom: "3px" } : { marginBottom: "7.5px" }}>
-                        <InputSelectorButton onClick={() => setIsTokenSelectModal(true)}>
-                          {receivingToken && <img src={`images/coins/${receivingToken && receivingToken.name}.png`} alt={receivingToken && receivingToken.name} style={{ width: '24px' }} />}
-                          <Text fontSize={isSmMobile ? "15px" : "18px"} m='0 5px' color="#ced0f9" >{receivingToken ? receivingToken.name : 'Select Token'}</Text>
-                          <BsChevronDown fontSize='12px' />
-                        </InputSelectorButton>
-                        <InputBalance placeholder="0" style={{ width: '80%' }} type="text" value={receivedAmount} readOnly />
-                      </Flex>
+              <Flex alignItems='center' justifyContent='space-between' mb='20px' style={{ width: '100%' }}>
+                <div style={{ width: "43%" }}>
+                  <Text color="#8B8CA7">From</Text>
+                  <div ref={wave}>
+                    <Card style={{ display: 'flex', background: "#3b3c4e", border: '1px solid #3B3C4E', borderRadius: '10px', justifyContent: 'center', boxShadow: 'none' }}>
+                      <BinanceButton>
+                        <InputNetworkSelectorButton onClick={() => setIsNetworkSelectModalOpen({ ...isNetworkSelectModalOpen, show: true, from: true, to: false })}>
+                          {isSmMobile && <Flex mt='5px' />}
+                          {fromChain && <Flex style={{ justifyContent: isSmMobile && 'center' }}>
+                            <img src={`images/network/${fromChain.img}_net.png`} alt={`${fromChain.title} icon`} style={{ width: '25px' }} />
+                          </Flex>
+                          }
+                          <Text fontSize={isSmMobile ? "16px" : "18px"} className="networkname" color="#ced0f9" style={{ textAlign: 'left', margin: '0 5px' }}>{fromChain && fromChain.title}</Text>
+                          <BsChevronDown fontSize='12px' style={{ width: isSmMobile && '100%' }} />
+                        </InputNetworkSelectorButton>
+                      </BinanceButton>
                     </Card>
                   </div>
+                </div>
 
-                  <div>
-                    <Text fontSize="16px" color="#8B8CA7" >Receiver Address</Text>
-                    <Input placeholder="Enter correct 0x address" style={{ borderRadius: '10px', backgroundColor: '#22232d', outline: 'none', border: '1px solid #3B3C4E', padding: '23px 15px', fontSize: '15px', marginTop: '3px', boxShadow: 'none', color: "#8B8CA7" }} value={receivedAddress} onChange={handleChange} />
+                <BsArrowLeftRight style={{ marginTop: 20, cursor: "pointer" }} onClick={changeChain} />
+
+                <div style={{ width: "43%" }}>
+                  <Text color="#8B8CA7">To</Text>
+                  <div ref={wave}>
+                    <Card style={{ display: 'flex', background: "#3b3c4e", border: '1px solid #3B3C4E', borderRadius: '10px', justifyContent: 'center', boxShadow: 'none' }}>
+                      <PolygonButton>
+                        <InputNetworkSelectorButton onClick={() => setIsNetworkSelectModalOpen({ ...isNetworkSelectModalOpen, show: true, from: false, to: true })}>
+                          {isSmMobile && <Flex mt='5px' />}
+                          {toChain && <Flex style={{ justifyContent: isSmMobile && 'center' }}><img src={`images/network/${toChain.img}_net.png`} alt={`${toChain.title} icon`} style={{ width: '25px' }} /></Flex>}
+                          <Text fontSize={isSmMobile ? "16px" : "18px"} className="networkname" color="#ced0f9" m="0 5px" style={{ textAlign: 'left' }}>{toChain && toChain.title}</Text>
+                          <BsChevronDown fontSize='12px' style={{ width: isSmMobile && '100%' }} />
+                        </InputNetworkSelectorButton>
+                      </PolygonButton>
+                    </Card>
                   </div>
+                </div>
+              </Flex>
 
-                  <div style={{ width: "100%", textAlign: "center", marginTop: '20px' }}>
-                    {!account ? (
-                      <Button style={{ width: "100%", margin: "auto", borderRadius: '5px', padding: '28px 0', fontSize: '18px', fontWeight: '400' }} onClick={onPresentNewConnectModal}>Connect Wallet</Button>
-                    ) :
-                      (
-                        <div ref={wave}>
-                          {
-                            isChangeChain && fromChain && fromChain.chainID !== chainId ?
-                              <Button style={{ width: "100%", margin: "auto", borderRadius: '5px', padding: '28px 0', fontSize: '18px', fontWeight: '400' }} onClick={switchChain}>
-                                Switch to <img src={`images/network/${fromChain.img}_net.png`} alt={`${fromChain.title} icon`} style={{ width: '25px', margin: "0 5px" }} /> {fromChain.title}
-                              </Button>
-                              :
-                              <Button
-                                className='bridge-btn'
-                                style={{ width: "100%", margin: "auto", borderRadius: '5px', padding: '28px 0', fontSize: '16px', fontWeight: 'bold' }}
-                                onClick={!auctionResponse ? getTransferQuote : openConfirmModal}
-                              // disabled={!auctionResponse && isError !== ''}
-                              >
-                                {(loading || isProcess) && <CircularProgress color="inherit" style={{ width: "20px", height: "20px", marginRight: "10px" }} />}{' '}
-                                {
-                                  isWarning ?
-                                    <>
-                                      {isWarning}
-                                    </>
-                                    :
-                                    <>
-                                      {!auctionResponse ? 'Get Transfer Quote' :
-                                        <>
-                                          {isProcess ? 'In Process' : 'Bridge'}
-                                        </>
-                                      }
-                                    </>
-                                }
-                              </Button>
-                          }
-                        </div>
-                      )
-                    }
+              <Card m='8px 0' style={{ background: "#00000038", border: '1px solid #3B3C4E', borderRadius: '10px', boxShadow: 'none' }}>
+                <div className='sendbox'>
+                  <Text color="#8B8CA7">You send</Text>
+                  <Text color="#8B8CA7">Balance: {currentFromTokenBalance.toFixed(2)}</Text>
+
+                </div>
+                <Flex style={isSmMobile ? { marginBottom: "3px" } : { marginBottom: "7.5px" }}>
+                  <InputSelectorButton onClick={() => setIsTokenSelectModal(true)}>
+                    {sendingToken && <img src={`images/coins/${sendingToken && sendingToken.name}.png`} alt={sendingToken && sendingToken.name} style={{ width: '24px' }} />}
+                    <Text fontSize={isSmMobile ? "15px" : "18px"} m='0 5px' color="#ced0f9" >{sendingToken ? sendingToken.name : 'Select Token'}</Text>
+                    <BsChevronDown fontSize='12px' />
+                  </InputSelectorButton>
+                  <MaxButton onClick={selectMaxBal}>Max</MaxButton>
+                  <input className="bridge-input" type="text" placeholder="0.0" value={sendAmount} onChange={handleChangeAmount} />
+                </Flex>
+              </Card>
+
+              <div>
+                <Card m='8px 0' style={{ background: "#00000038", border: '1px solid #3B3C4E', borderRadius: '10px', boxShadow: 'none' }}>
+                  <div className='sendbox'>
+                    <Text color="#8B8CA7" style={isSmMobile ? { margin: '0px' } : { margin: '0', marginBottom: "0" }} >Receive Amount</Text>
+                    <Text color="#8B8CA7">Balance: {currentToTokenBalance.toFixed(2)}</Text>
                   </div>
-
-                  {isError !== '' && <div style={{ width: "100%", display: 'flex', justifyContent: 'center' }}>
-                    <Text className="buttonBottomText" fontSize="18px" color="rgb(232, 66, 90)" p="10px" mt="12px" style={{ textAlign: 'center', width: '70%', background: "rgba(232, 66, 90, 0.125)" }}>{`${isError}`}</Text>
-                  </div>}
-
-                  <Text mt="24px" color="#8B8CA7" style={{ textAlign: 'right' }}>Large amounts take minutes to transfer</Text>
-                  <Flex style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Flex alignItems='center'>
-                      <Text fontSize="16px" color="#8B8CA7" mr="5px">Router Fees:</Text>
-                      <BsPatchQuestion color='#8B8CA7' data-tip data-for='tip1' />
-                      <ReactTooltip id='tip1' aria-haspopup='true' place='right' backgroundColor='#1377bf' className='tooltip' >
-                        <Text fontSize="14px" color="white">Router Fee</Text>
-                      </ReactTooltip>
-                    </Flex>
-                    <Text color="#8B8CA7" fontSize='16px'>
-                      {routerFees ? routerFees : 0}
-                    </Text>
-                  </Flex>
-                  <Flex style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Flex alignItems='center'>
-                      <Text fontSize="16px" color="#8B8CA7" mr="5px">Relayer Fees:</Text>
-                      <BsPatchQuestion color='#8B8CA7' data-tip data-for='tip1' />
-                      <ReactTooltip id='tip1' aria-haspopup='true' place='right' backgroundColor='#1377bf' className='tooltip' >
-                        <Text fontSize="14px" color="white">Relayer Fee</Text>
-                      </ReactTooltip>
-                    </Flex>
-                    <Text color="#8B8CA7" fontSize='16px'>
-                      {relayerFee ? relayerFee : 0}
-                    </Text>
-                  </Flex>
-                  <Flex style={{ justifyContent: "space-between" }}>
-                    <Flex alignItems='center'>
-                      <Text fontSize="16px" color="#8B8CA7" mr="5px">Gas Fees :</Text>
-                      <BsPatchQuestion color='#8B8CA7' data-tip data-for='tip2' />
-                      <ReactTooltip id='tip2' aria-haspopup='true' place='right' backgroundColor='#1377bf' className='tooltip' >
-                        <Text fontSize="14px" color="white">Gas Fee</Text>
-                      </ReactTooltip>
-                    </Flex>
-                    <Text color="#8B8CA7" fontSize='16px'>
-                      {gasFeeAmount ? gasFeeAmount : 0}
-                    </Text>
+                  <Flex style={isSmMobile ? { marginBottom: "3px" } : { marginBottom: "7.5px" }}>
+                    <InputSelectorButton onClick={() => setIsTokenSelectModal(true)}>
+                      {receivingToken && <img src={`images/coins/${receivingToken && receivingToken.name}.png`} alt={receivingToken && receivingToken.name} style={{ width: '24px' }} />}
+                      <Text fontSize={isSmMobile ? "15px" : "18px"} m='0 5px' color="#ced0f9" >{receivingToken ? receivingToken.name : 'Select Token'}</Text>
+                      <BsChevronDown fontSize='12px' />
+                    </InputSelectorButton>
+                    <InputBalance placeholder="0" style={{ width: '80%' }} type="text" value={receivedAmount} readOnly />
                   </Flex>
                 </Card>
               </div>
-              {
-                // curTx && fromChain && toChain && sendAmount && sendingToken &&
-                isActiveTx &&
-                <div>
-                  <Text style={{ justifyContent: 'center', textAlign: 'center' }} bold>ACTIVE TRANSACTIONS</Text>
-                  <ActiveTx>
-                    <Text fontSize='18px' bold>
-                      <Flex color='white' style={{ position: 'relative' }}>
-                        <Text fontSize='16px' color='#67646c' mr='10px'>TX ID: </Text>
-                        {curTx.slice(0, 5)}...{curTx.slice(-5)}
-                        <ContentCopyIcon style={{ margin: '4px', fontSize: '18px', color: '#67646c' }} onClick={() => {
-                          if (navigator.clipboard) {
-                            navigator.clipboard.writeText(curTx);
-                            setTxTooltipDisplayed(true);
-                            setTimeout(() => {
-                              setTxTooltipDisplayed(false);
-                            }, 1000);
-                          }
-                        }} />
-                        <Tooltip isTooltipDisplayed={isTxTooltipDisplayed} style={{ width: "70px", left: "130px" }}>Copied</Tooltip>
-                      </Flex>
-                    </Text>
-                    <Flex justifyContent='center' m='10px 0'>
-                      <img src={`images/network/${fromChain.img}_net.png`} alt={`${fromChain.title} icon`} style={{ width: '25px' }} />
-                      <BsArrowLeftRight style={{ margin: '3px 20px', cursor: "pointer", color: 'white' }} />
-                      <img src={`images/network/${toChain.img}_net.png`} alt={`${toChain.title} icon`} style={{ width: '25px' }} />
-                    </Flex>
-                    <div style={{ justifyContent: 'center', margin: 'auto' }}>
-                      <Flex justifyContent='center' style={{ display: 'flex' }}>
-                        <Flex m='5px 0' p='5px 10px' style={{ background: '#00000033', width: 'fit-content', borderRadius: '20px' }}>
-                          <img src={`images/coins/${sendingToken && sendingToken.name}.png`} alt={sendingToken && sendingToken.name} style={{ width: '24px' }} />
-                          <Text m='0 10px'>{sendAmount}</Text>
-                          <Text>{sendingToken.name}</Text>
-                        </Flex>
-                      </Flex>
-                      <Flex justifyContent='center' style={{ margin: '5px 0' }}>
-                        {
-                          isWait ? (
-                            <>
-                              <Text>Waiting for Router</Text>
-                            </>
-                          ) : (
-                            <>
-                              {
-                                loading ?
-                                  <>
-                                    <Button style={{ fontSize: '22px', borderRadius: '15px', height: '30px' }}>
-                                      <CircularProgress color="inherit" style={{ width: "20px", height: "20px", marginRight: "10px" }} />
-                                      <Text fontSize='20px'>Claiming Funds</Text>
-                                    </Button>
-                                  </>
-                                  :
-                                  <Button style={{ fontSize: '18px', borderRadius: '15px', height: '30px' }} onClick={signToClaim}>Ready to Claim</Button>
-                              }
-                            </>
-                          )
-                        }
-                      </Flex>
-                    </div>
-                    <Text>Expire in 3 days</Text>
-                  </ActiveTx>
-                </div>
-              }
-              {/* {
-                !isMobile ?
-                  <Flex alignItems='space-between' flexDirection='column' justifyContent='center'>
-                    <Flex alignItems='center'>
-                      <Flex alignItems='end' mr='10px'>
-                        {sendingToken && (
-                          <Flex alignItems='center' marginRight='-20px' style={{ zIndex: 1 }}>
-                            <Text fontSize='20px'>{sendingToken.name}</Text>
-                            <img src={`images/coins/${sendingToken && sendingToken.name}.png`} alt={sendingToken && sendingToken.name} width="30px" style={{ height: '30px' }} />
-                          </Flex>
-                        )}
-                        {fromChain && <img src={`images/network/${fromChain.img}_net.png`} alt={`${fromChain.title} icon`} width="90px" />}
-                      </Flex>
-                      {
-                        bridgeStep === 1 ?
-                          <AnimateGroup play>
-                            {animationGroup.map((item, index) => {
-                              return (
-                                <AnimateKeyframes
-                                  play
-                                  duration={0.2}
-                                  iterationCount="infinite"
-                                  direction="alternate"
-                                  sequenceIndex={index}
-                                  key={item}
-                                  keyframes={[
-                                    { 0: 'transform: scale(1)' },
-                                    { 100: 'transform: scale(2)' },
-                                  ]}
-                                >
-                                  <div className='progressObject' />
-                                </AnimateKeyframes>
-                              )
-                            })}
-                          </AnimateGroup>
-                          :
-                          <AnimateGroup play>
-                            {animationGroup.map((item, index) => {
-                              return (
-                                <AnimateKeyframes
-                                  play
-                                  pause
-                                  duration={0.2}
-                                  iterationCount="infinite"
-                                  direction="alternate"
-                                  sequenceIndex={index}
-                                  key={item}
-                                  keyframes={[
-                                    { 0: 'transform: scale(1)' },
-                                    { 100: 'transform: scale(2)' },
-                                  ]}
-                                >
-                                  <div className='progressObject' />
-                                </AnimateKeyframes>
-                              )
-                            })}
-                          </AnimateGroup>
-                      }
-                      <CircleLoader color="#2d74c4" loading={loadingBridge} size={150} css={override} />
-                      {
-                        bridgeStep === 0 ?
-                          <div className="loading">
-                            <span data-text="R">R</span>
-                            <span data-text="E">E</span>
-                            <span data-text="A">A</span>
-                            <span data-text="D">D</span>
-                            <span data-text="Y">Y</span>
-                          </div>
 
+              <div>
+                <Text fontSize="16px" color="#8B8CA7" >Receiver Address</Text>
+                <Input placeholder="Enter correct 0x address" style={{ borderRadius: '10px', backgroundColor: '#22232d', outline: 'none', border: '1px solid #3B3C4E', padding: '23px 15px', fontSize: '15px', marginTop: '3px', boxShadow: 'none', color: "#8B8CA7" }} value={receivedAddress} onChange={handleChange} />
+              </div>
+
+              <SelectBridge>
+                <Text fontSize="16px" color="#8B8CA7" >Select Bridge</Text>
+                {
+                  sendingToken || receivingToken ?
+                    <ItemWrap>
+                      {showConnext && <BridgeItem
+                        style={{ background: selectedBridge === 1 && '#19191e' }}
+                        onClick={() => setSelectBridge(1)}
+                      >
+                        Connext
+                      </BridgeItem>}
+                      {showAny && <BridgeItem
+                        style={{ background: selectedBridge === 2 && '#19191e' }}
+                        onClick={() => setSelectBridge(2)}
+                      >
+                        AnySwap
+                      </BridgeItem>}
+                    </ItemWrap>
+                    :
+                    <Nodata>No data yet</Nodata>
+                }
+              </SelectBridge>
+
+              <div style={{ width: "100%", textAlign: "center", marginTop: '20px' }}>
+                {!account ? (
+                  <Button style={{ width: "100%", margin: "auto", borderRadius: '5px', padding: '28px 0', fontSize: '18px', fontWeight: '400' }} onClick={onPresentNewConnectModal}>Connect Wallet</Button>
+                ) :
+                  (
+                    <div ref={wave}>
+                      {
+                        isChangeChain && fromChain && fromChain.chainID !== chainId ?
+                          <Button style={{ width: "100%", margin: "auto", borderRadius: '5px', padding: '28px 0', fontSize: '18px', fontWeight: '400' }} onClick={switchChain}>
+                            Switch to <img src={`images/network/${fromChain.img}_net.png`} alt={`${fromChain.title} icon`} style={{ width: '25px', margin: "0 5px" }} /> {fromChain.title}
+                          </Button>
                           :
                           <>
                             {
-                              bridgeStep === 3 ?
-                                <div className="loading completed">
-                                  <span data-text="C">C</span>
-                                  <span data-text="O">O</span>
-                                  <span data-text="M">M</span>
-                                  <span data-text="P">P</span>
-                                  <span data-text="L">L</span>
-                                  <span data-text="E">E</span>
-                                  <span data-text="T">T</span>
-                                  <span data-text="E">E</span>
-                                  <span data-text="D">D</span>
-                                </div>
+                              selectedBridge === 1 ?
+                                <ConnextBtn
+                                  selectedBridge={selectedBridge}
+                                  ConfirmButton={ConfirmButton}
+                                  loading={loading}
+                                  isProcess={isProcess}
+                                  requestedApproval={requestedApproval}
+                                  isWarning={isWarning}
+                                  auctionResponse={auctionResponse}
+                                  isApproved={isApproved}
+                                  sendingToken={sendingToken}
+                                />
                                 :
-                                <div className="loading loading07">
-                                  <span data-text="B">B</span>
-                                  <span data-text="R">R</span>
-                                  <span data-text="I">I</span>
-                                  <span data-text="D">D</span>
-                                  <span data-text="G">G</span>
-                                  <span data-text="I">I</span>
-                                  <span data-text="N">N</span>
-                                  <span data-text="G">G</span>
-                                </div>
+                                <AnySwapBtn
+                                  requestedApproval={requestedApproval}
+                                  sendingToken={sendingToken}
+                                  selectedBridge={selectedBridge}
+                                  isWarning={isWarning}
+                                  loading={loading}
+                                  isAnyApprove={isAnyApprove}
+                                  AnyConfirm={AnyConfirm}
+                                />
                             }
                           </>
-                      }
-                      {
-                        bridgeStep === 2 ?
-                          <AnimateGroup play>
-                            {animationGroup.map((item, index) => {
-                              return (
-                                <AnimateKeyframes
-                                  play
-                                  iterationCount="infinite"
-                                  duration={0.2}
-                                  direction="alternate"
-                                  sequenceIndex={index}
-                                  key={item}
-                                  keyframes={[
-                                    { 0: 'transform: scale(1)' },
-                                    { 100: 'transform: scale(2)' },
-                                  ]}
-                                >
-                                  <div className='progressObject' />
-                                </AnimateKeyframes>
-                              )
-                            })}
-                          </AnimateGroup>
-                          :
-                          <AnimateGroup play>
-                            {animationGroup.map((item, index) => {
-                              return (
-                                <AnimateKeyframes
-                                  play
-                                  pause
-                                  iterationCount="infinite"
-                                  duration={0.2}
-                                  direction="alternate"
-                                  sequenceIndex={index}
-                                  key={item}
-                                  keyframes={[
-                                    { 0: 'transform: scale(1)' },
-                                    { 100: 'transform: scale(2)' },
-                                  ]}
-                                >
-                                  <div className='progressObject' />
-                                </AnimateKeyframes>
-                              )
-                            })}
-                          </AnimateGroup>
-                      }
 
-                      <Flex alignItems="end" ml='10px'>
-                        {toChain && <img src={`images/network/${toChain.img}_net.png`} alt={`${toChain.title} icon`} width="90px" />}
-                        {receivingToken && (
-                          <Flex alignItems='center' ml='-20px'>
-                            <img src={`images/coins/${receivingToken && receivingToken.name}.png`} alt={receivingToken && receivingToken.name} width="30px" style={{ height: '30px' }} />
-                            <Text fontSize='20px'>{receivingToken.name}</Text>
-                          </Flex>
-                        )}
-                      </Flex>
+                      }
+                    </div>
+                  )
+                }
+              </div>
+
+              {isError !== '' && <div style={{ width: "100%", display: 'flex', justifyContent: 'center' }}>
+                <Text className="buttonBottomText" fontSize="18px" color="rgb(232, 66, 90)" p="10px" mt="12px" style={{ textAlign: 'center', width: '70%', background: "rgba(232, 66, 90, 0.125)" }}>{`${isError}`}</Text>
+              </div>}
+
+              <Text mt="24px" color="#8B8CA7" style={{ textAlign: 'right' }}>Large amounts take minutes to transfer</Text>
+              <Flex style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Flex alignItems='center'>
+                  <Text fontSize="16px" color="#8B8CA7" mr="5px">Router Fees:</Text>
+                  <BsPatchQuestion color='#8B8CA7' data-tip data-for='tip1' />
+                  <ReactTooltip id='tip1' aria-haspopup='true' place='right' backgroundColor='#1377bf' className='tooltip' >
+                    <Text fontSize="14px" color="white">Router Fee</Text>
+                  </ReactTooltip>
+                </Flex>
+                <Text color="#8B8CA7" fontSize='16px'>
+                  {routerFees ? routerFees : 0}
+                </Text>
+              </Flex>
+              <Flex style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Flex alignItems='center'>
+                  <Text fontSize="16px" color="#8B8CA7" mr="5px">Relayer Fees:</Text>
+                  <BsPatchQuestion color='#8B8CA7' data-tip data-for='tip1' />
+                  <ReactTooltip id='tip1' aria-haspopup='true' place='right' backgroundColor='#1377bf' className='tooltip' >
+                    <Text fontSize="14px" color="white">Relayer Fee</Text>
+                  </ReactTooltip>
+                </Flex>
+                <Text color="#8B8CA7" fontSize='16px'>
+                  {relayerFee ? relayerFee : 0}
+                </Text>
+              </Flex>
+              <Flex style={{ justifyContent: "space-between" }}>
+                <Flex alignItems='center'>
+                  <Text fontSize="16px" color="#8B8CA7" mr="5px">Gas Fees :</Text>
+                  <BsPatchQuestion color='#8B8CA7' data-tip data-for='tip2' />
+                  <ReactTooltip id='tip2' aria-haspopup='true' place='right' backgroundColor='#1377bf' className='tooltip' >
+                    <Text fontSize="14px" color="white">Gas Fee</Text>
+                  </ReactTooltip>
+                </Flex>
+                <Text color="#8B8CA7" fontSize='16px'>
+                  {gasFeeAmount ? gasFeeAmount : 0}
+                </Text>
+              </Flex>
+            </Card>
+          </div>
+          {
+            isActiveTx &&
+            <div>
+              <Text style={{ justifyContent: 'center', textAlign: 'center' }} bold>ACTIVE TRANSACTIONS</Text>
+              <ActiveTx>
+                <Text fontSize='18px' bold>
+                  <Flex color='white' style={{ position: 'relative' }}>
+                    <Text fontSize='16px' color='#67646c' mr='10px'>TX ID: </Text>
+                    {curTx.slice(0, 5)}...{curTx.slice(-5)}
+                    <ContentCopyIcon style={{ margin: '4px', fontSize: '18px', color: '#67646c' }} onClick={() => {
+                      if (navigator.clipboard) {
+                        navigator.clipboard.writeText(curTx);
+                        setTxTooltipDisplayed(true);
+                        setTimeout(() => {
+                          setTxTooltipDisplayed(false);
+                        }, 1000);
+                      }
+                    }} />
+                    <Tooltip isTooltipDisplayed={isTxTooltipDisplayed} style={{ width: "70px", left: "130px" }}>Copied</Tooltip>
+                  </Flex>
+                </Text>
+                <Flex justifyContent='center' m='10px 0'>
+                  <img src={`images/network/${fromChain.img}_net.png`} alt={`${fromChain.title} icon`} style={{ width: '25px' }} />
+                  <BsArrowLeftRight style={{ margin: '3px 20px', cursor: "pointer", color: 'white' }} />
+                  <img src={`images/network/${toChain.img}_net.png`} alt={`${toChain.title} icon`} style={{ width: '25px' }} />
+                </Flex>
+                <div style={{ justifyContent: 'center', margin: 'auto' }}>
+                  <Flex justifyContent='center' style={{ display: 'flex' }}>
+                    <Flex m='5px 0' p='5px 10px' style={{ background: '#00000033', width: 'fit-content', borderRadius: '20px' }}>
+                      <img src={`images/coins/${sendingToken && sendingToken.name}.png`} alt={sendingToken && sendingToken.name} style={{ width: '24px' }} />
+                      <Text m='0 10px'>{sendAmount}</Text>
+                      <Text>{sendingToken.name}</Text>
                     </Flex>
                   </Flex>
-                  :
-                  <div className="bridge-tracker">
-                    <Flex justifyContent="center" className="mobile-tracker">
-                      {
-                        bridgeStep !== 0 ? (
-                          <Flex alignItems='center'>
-                            <CircleLoader color="#2d74c4" loading={loadingBridge} size={150} css={override} />
-                            <div className="loading loading07">
-                              <span data-text="B">B</span>
-                              <span data-text="R">R</span>
-                              <span data-text="I">I</span>
-                              <span data-text="D">D</span>
-                              <span data-text="G">G</span>
-                              <span data-text="I">I</span>
-                              <span data-text="N">N</span>
-                              <span data-text="G">G</span>
-                            </div>
-                          </Flex>
-                        ) : (
-                          <Flex justifyContent='space-between' alignItems='center' style={{ width: '100%' }}>
-                            <Flex alignItems='end' mr='10px'>
-                              {sendingToken && (
-                                <Flex alignItems='center' marginRight='-20px' style={{ zIndex: 1 }}>
-                                  <Text fontSize='16px'>{sendingToken.name}</Text>
-                                  <img src={`images/coins/${sendingToken && sendingToken.name}.png`} alt={sendingToken && sendingToken.name} width="20px" style={{ height: '20px' }} />
-                                </Flex>
-                              )}
-                              {fromChain && <img src={`images/network/${fromChain.img}_net.png`} alt={`${fromChain.title} icon`} width="60px" />}
-                            </Flex>
-                            {
-                              bridgeStep ?
-                                <AnimateGroup play>
-                                  {mobileAnimationGroup.map((item, index) => {
-                                    return (
-                                      <AnimateKeyframes
-                                        play
-                                        duration={0.2}
-                                        iterationCount="infinite"
-                                        direction="alternate"
-                                        sequenceIndex={index}
-                                        key={item}
-                                        keyframes={[
-                                          { 0: 'transform: scale(1)' },
-                                          { 100: 'transform: scale(2)' },
-                                        ]}
-                                      >
-                                        <div className='progressObject' />
-                                      </AnimateKeyframes>
-                                    )
-                                  })}
-                                </AnimateGroup>
-                                :
-                                <AnimateGroup play>
-                                  {mobileAnimationGroup.map((item, index) => {
-                                    return (
-                                      <AnimateKeyframes
-                                        play
-                                        pause
-                                        duration={0.2}
-                                        iterationCount="infinite"
-                                        direction="alternate"
-                                        sequenceIndex={index}
-                                        key={item}
-                                        keyframes={[
-                                          { 0: 'transform: scale(1)' },
-                                          { 100: 'transform: scale(2)' },
-                                        ]}
-                                      >
-                                        <div className='progressObject' />
-                                      </AnimateKeyframes>
-                                    )
-                                  })}
-                                </AnimateGroup>
-                            }
-                            <Flex alignItems="end" ml='10px'>
-                              {toChain && <img src={`images/network/${toChain.img}_net.png`} alt={`${toChain.title} icon`} width="60px" />}
-                              {receivingToken && (
-                                <Flex alignItems='center' ml='-20px'>
-                                  <img src={`images/coins/${receivingToken && receivingToken.name}.png`} alt={receivingToken && receivingToken.name} width="20px" style={{ height: '20px' }} />
-                                  <Text fontSize='16px'>{receivingToken.name}</Text>
-                                </Flex>
-                              )}
-                            </Flex>
-                          </Flex>
-                        )}
-                    </Flex>
-                  </div>
-              } */}
-
-            </Flex>
-          </Page>
-          :
-          <Explorer columns={columns} transactions={transactions} setSelectTab={setSelectTab} />
-      }
+                  <Flex justifyContent='center' style={{ margin: '5px 0' }}>
+                    {
+                      isWait ? (
+                        <>
+                          <Text>Waiting for Router</Text>
+                        </>
+                      ) : (
+                        <>
+                          {
+                            loading ?
+                              <>
+                                <Button style={{ fontSize: '22px', borderRadius: '15px', height: '30px' }}>
+                                  <CircularProgress color="inherit" style={{ width: "20px", height: "20px", marginRight: "10px" }} />
+                                  <Text fontSize='20px'>Claiming Funds</Text>
+                                </Button>
+                              </>
+                              :
+                              <Button style={{ fontSize: '18px', borderRadius: '15px', height: '30px' }} onClick={signToClaim}>Ready to Claim</Button>
+                          }
+                        </>
+                      )
+                    }
+                  </Flex>
+                </div>
+                <Text>Expire in 3 days</Text>
+              </ActiveTx>
+            </div>
+          }
+        </Flex>
+      </Page >
       <ReactModal isOpen={isNetworkSelectModalOpen.show} onRequestClose={() => closeModal()} style={customStyles} ariaHideApp={false}>
         <NetworkSelectModal isfrom={isNetworkSelectModalOpen} selectNetwork={selectNetwork} onDismiss={() => closeModal()} />
       </ReactModal>

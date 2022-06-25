@@ -5,10 +5,7 @@ import { ethers } from "ethers";
 import { useDispatch } from "react-redux";
 import { updateUserAllowance, fetchFarmUserDataAsync } from "state/actions";
 import { approve } from "utils/callHelpers";
-import { useMasterchef, useCake, useSousChef, useLottery } from "./useContract";
-import { getErc20Contract } from "../utils/contractHelpers";
-import { getBridgeFeeAddress } from "../utils/addressHelpers";
-
+import { useMasterchef, useCake, useSousChef, useLottery, useERCContract, useERC20Contract } from "./useContract";
 
 // Approve a Farm
 export const useApprove = (lpContract: Contract) => {
@@ -87,19 +84,46 @@ export const useIfoApprove = (
 };
 
 // Approve bridge
-// export const useBridgeApprove = (chainID, amount) => {
-//   const { account, library } = useWeb3React();
-//   const FeeTokenContract = getErc20Contract(library.getSigner(), chainID);
-//   const onApprove = useCallback(async () => {
-//     try {
-//       const tx = await FeeTokenContract
-//         .approve(getBridgeFeeAddress[chainID], amount)
-//         .send({ from: account });
-//       return tx;
-//     } catch {
-//       return false;
-//     }
-//   }, []);
+export const useBridgeApprove = () => {
+  const { account, chainId } = useWeb3React();
+  const FeeTokenContract = useERC20Contract(chainId);
+  const handleApprove = useCallback(async (address, amount) => {
+    if(FeeTokenContract && chainId) {
+      try {
+        const tx = await FeeTokenContract.methods
+          .approve(address, amount)
+          .send({ from: account });
+        return tx;
+      } catch (err) {
+        return false;
+      }
+    }
+    return false;
+  }, [chainId, FeeTokenContract]);
 
-//   return onApprove;
-// };
+  return { onApprove: handleApprove };
+};
+
+// Approve anyswapbridge
+export const useAnyApprove = () => {
+  const { account, chainId } = useWeb3React();
+  const ERC20TokenContract = useERCContract(chainId);
+  const handleApprove = useCallback(async (address, amount) => {
+    console.log("approve => ", address, amount, ERC20TokenContract)
+    if(ERC20TokenContract && chainId) {
+      try {
+        const tx = await ERC20TokenContract.methods
+          .approve(address, amount)
+          .send({ from: account });
+        return tx;
+      } catch (err) {
+        return false;
+      }
+    }
+    return false;
+  }, [chainId, ERC20TokenContract]);
+
+  return { onAnyApprove: handleApprove };
+};
+
+//

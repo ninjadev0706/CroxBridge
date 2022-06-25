@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from 'react'
 import { useHistory } from "react-router-dom";
 import { useWeb3React } from '@web3-react/core';
-import { injected, bsc } from "../../utils/connector";
-import WalletConnector from '../../hooks/useWalletConnector'
+import { injected, bsc, walletconnect } from "../../utils/connector";
+// import WalletConnector from '../../hooks/useWalletConnector'
 import { Menu as UikitMenu, Button as UiKitButton, useMatchBreakpoints, useWalletModal, Text, Flex, ConnectorId, Link } from 'crox-new-uikit'
 import Menu, {
   Button,
@@ -249,7 +249,7 @@ const Header = (props) => {
       activate(injected)
     }
   }, [])
-  const walletconnect = WalletConnector();
+  // const walletconnect = WalletConnector();
   const handleLogin = (connectorId: ConnectorId) => {
     IsConnectConfirm = true;
     if (connectorId === "walletconnect") {
@@ -330,6 +330,16 @@ const Header = (props) => {
                   </Flex>
                   <Flex flexDirection='column' ml='20px'>
                     <Text color="white" style={{ lineHeight: '24px' }} fontSize='14px' mt="10px">Exchange your tokens using CROXSWAP</Text>
+                  </Flex>
+                </a>
+              </StyledDropDownItem>
+              <StyledDropDownItem className="menu-item swap">
+                <a style={{ marginTop: '3px', marginLeft: '7px' }} href="/explorer">
+                  <Flex alignItems='center'>
+                    <div style={{ width: '16px', height: '16px' }}>
+                      <BridgeIcon />
+                    </div>
+                    <Text color="white" bold ml='5px' fontSize="14px">Tx Explorer (soon)</Text>
                   </Flex>
                 </a>
               </StyledDropDownItem>

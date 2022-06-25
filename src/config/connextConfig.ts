@@ -1,62 +1,10 @@
-export const chainConfig: Record<
-    number,
-    { providers: string[]; subgraph?: string; transactionManagerAddress?: string }
-> = {
-    '1': {
-        providers: [
-            'https://mainnet.infura.io/v3/e92c433ba7214537873fe0025ee0763c',
-        ],
-    },
-    '4': {
-        providers: ["https://rinkeby.infura.io/v3/e92c433ba7214537873fe0025ee0763c"]
-    },
-    '5': {
-        providers: ["https://goerli.infura.io/v3/e92c433ba7214537873fe0025ee0763c"]
-    },
-    '56': {
-        providers: [
-            'https://bsc-dataseed1.binance.org',
-            'https://bsc-dataseed2.binance.org',
-            'https://bsc-dataseed3.binance.org',
-            'https://bsc-dataseed4.binance.org',
-            'https://bsc-dataseed1.defibit.io',
-            'https://bsc-dataseed2.defibit.io',
-            'https://bsc-dataseed3.defibit.io',
-            'https://bsc-dataseed4.defibit.io',
-            'https://bsc-dataseed1.ninicoin.io',
-            'https://bsc-dataseed2.ninicoin.io',
-            'https://bsc-dataseed3.ninicoin.io',
-            'https://bsc-dataseed4.ninicoin.io',
-        ],
-    },
-    '137': {
-        providers: [
-            'https://polygon-rpc.com/',
-            'https://matic-mainnet.chainstacklabs.com',
-            'https://rpc-mainnet.matic.quiknode.pro',
-            'https://rpc-mainnet.matic.network',
-        ],
-    },
-    '250': {
-        providers: [
-            "https://rpcapi.fantom.network",
-            "https://rpc.fantom.network",
-            "https://rpc2.fantom.network",
-            "https://rpc3.fantom.network",
-            "https://rpc.ankr.com/fantom",
-            "https://rpc.ftm.tools",
-        ],
-    }
-};
-
-// arrays of "swap pools"
-export type SwapConfig = {
+export type ConnextConfig = {
     index: number;
     name: string;
     assets: { [chainId: number]: string };
     tokenDecimal: number;
 };
-export const swapConfig: SwapConfig[] = [
+export const connextConfig: ConnextConfig[] = [
     {
         index: 0,
         name: 'ETH',

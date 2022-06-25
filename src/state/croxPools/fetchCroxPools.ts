@@ -127,7 +127,7 @@ const fetchCroxPools = async () => {
         ...farmConfig,
         tokenAmount: tokenAmount.toJSON(),
         // quoteTokenAmount: quoteTokenAmount,
-        lpTotalSupply: new BigNumber(lpTokenBalanceMC),
+        // lpTotalSupply: new BigNumber(lpTokenBalanceMC),
         lpTotalInQuoteToken: lpTotalInQuoteToken.toJSON(),
         tokenPriceVsQuote: tokenPriceVsQuote.toJSON(),
         poolWeight: poolWeight.toNumber(),

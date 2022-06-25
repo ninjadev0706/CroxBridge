@@ -24,10 +24,14 @@ export const getLotteryTicketAddress = () => {
   return addresses.lotteryNFT[chainId];
 };
 
-export const getBridgeFeeAddress = (chainID) => {
+export const getBridgeFeeAddress = (chainID: number) => {
   return addresses.bridgeFee[chainID];
 };
 
 export const getBridgeTokenAddress = (chainID) => {
+  return addresses.tt[chainID];
+};
+
+export const getCroxAddress = (chainID) => {
   return addresses.cake[chainID];
 };
